@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SnowmakingWX</title>
+  <meta name="description" content="Hourly snowmaking forecast: wet bulb, humidity, temperature and wind drift from National Weather Service data.">
+  <meta name="theme-color" content="#0b1320">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄</text></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">❄</span>
+      <div>
+        <h1>SnowmakingWX</h1>
+        <div class="sub" id="placeLabel">—</div>
+      </div>
+    </div>
+    <div class="controls">
+      <select id="resortSelect" aria-label="Resort"></select>
+      <button id="deleteResortBtn" class="btn ghost" hidden title="Remove this saved location">✕</button>
+      <button id="refreshBtn" class="btn">Refresh</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="status" class="status" hidden></div>
+
+    <section class="cards" id="cards"></section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Hourly snowmaking outlook</h2>
+        <div class="seg" id="rangeSeg">
+          <button data-h="48">48h</button>
+          <button data-h="72">72h</button>
+          <button data-h="168">7d</button>
+        </div>
+      </div>
+      <div class="strip-wrap"><div id="strip" class="strip"></div></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Wet bulb, temperature &amp; humidity</h2><span class="hint">Tap the chart to pick an hour</span></div>
+      <div class="chart-scroll"><div class="chart-box"><canvas id="wbChart"></canvas></div></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Wind</h2><span class="hint">Arrows point the way snow will drift</span></div>
+      <div class="chart-scroll"><div class="chart-box short"><canvas id="windChart"></canvas></div></div>
+    </section>
+
+    <section class="panel" id="mapPanel">
+      <div class="panel-head">
+        <h2>Plume drift map</h2>
+        <div class="tools">
+          <select id="gunTypeSelect" aria-label="Gun type"></select>
+          <button id="addGunBtn" class="btn">+ Add gun</button>
+          <button id="setLocBtn" class="btn ghost">Save map center as location</button>
+        </div>
+      </div>
+      <div class="map-layout">
+        <div id="map"></div>
+        <aside class="hour-detail" id="hourDetail"></aside>
+      </div>
+      <div class="timeline">
+        <button id="playBtn" class="btn icon" aria-label="Play / pause">▶</button>
+        <input type="range" id="hourSlider" min="0" max="71" value="0" aria-label="Forecast hour">
+        <span id="sliderLabel"></span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Snowmaking windows</h2></div>
+      <div id="windows" class="windows"></div>
+      <details class="table-details">
+        <summary>Hourly table</summary>
+        <div class="table-scroll"><table id="hourTable"></table></div>
+      </details>
+    </section>
+
+    <footer>
+      <p id="updated"></p>
+      <p>Forecast data: <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener">National Weather Service API</a> gridpoint forecast. Wet bulb is computed from forecast temperature and humidity at the grid's elevation. Plume reach is a rough estimate (throw distance + wind speed × hang time) — thresholds and gun parameters are editable in <code>js/config.js</code>.</p>
+    </footer>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
