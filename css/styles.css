@@ -57,6 +57,27 @@ select {
 }
 
 /* ---------- header ---------- */
+.search { position: relative; display: flex; gap: 6px; flex: 1 1 280px; max-width: 460px; min-width: 0; }
+.search input {
+  flex: 1; min-width: 0;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
+}
+.search input:focus { outline: none; border-color: var(--accent); }
+.search-results {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 1100;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45); overflow: hidden;
+}
+.search-hit {
+  display: block; width: 100%; text-align: left; background: transparent; border: 0;
+  border-bottom: 1px solid var(--border); padding: 8px 12px; cursor: pointer;
+}
+.search-hit:last-child { border-bottom: 0; }
+.search-hit:hover, .search-hit:focus { background: var(--panel-2); outline: none; }
+.search-hit b { display: block; font-weight: 600; }
+.search-hit small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-msg { padding: 10px 12px; color: var(--muted); font-size: 13px; }
+
 .topbar {
   position: sticky;
   top: 0;
@@ -225,8 +246,8 @@ footer code { color: var(--text); }
 @media (max-width: 600px) {
   main { padding: 12px; gap: 12px; }
   .topbar { padding: 8px 12px; }
-  .controls { width: 100%; }
-  .controls select { flex: 1; }
+  .controls, .search { width: 100%; max-width: none; flex-basis: 100%; }
+  .controls select { flex: 1; min-width: 0; }
   .card-value { font-size: 20px; }
   #map { height: 380px; }
   .chart-box { height: 260px; }

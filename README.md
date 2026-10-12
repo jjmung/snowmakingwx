@@ -7,6 +7,7 @@ Hourly snowmaking forecast built on the free National Weather Service API (api.w
 - **Charts**: wet bulb, temperature, dew point and RH, plus a wind chart (sustained, gusts, and arrows showing which way snow will drift).
 - **Plume drift map**: satellite, topo or street map. Place fan or tower guns, then scrub or play through the hours to see estimated plume direction and reach.
 - **Snowmaking windows**: continuous stretches of workable hours, with min wet bulb and average wind.
+- **Location search**: type a resort, town, address or `lat, lon` in the header (U.S. only; geocoding by OpenStreetMap Nominatim). The address bar updates so the link can be shared, and **☆ Save** adds the place to your list.
 - **Locations**: Granite Peak is the default. "Save map center as location" adds a resort, or open a link like `?lat=44.926&lon=-89.684&name=My%20Hill`.
 
 Wet bulb is computed psychrometrically from NWS temperature and humidity, corrected for the grid cell's elevation.

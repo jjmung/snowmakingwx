@@ -310,12 +310,120 @@
 
   function selectResort(id) {
     state.resort = state.resorts.find((r) => r.id === id) || state.resorts[0];
-    $('#resortSelect').value = state.resort.id;
-    $('#deleteResortBtn').hidden = !state.resort.custom;
-    store.set('snowwx.resort', state.resort.id);
-    snowMap.setResort(state.resort, store.get(`snowwx.guns.${state.resort.id}`, []));
+    const r = state.resort;
+    $('#resortSelect').value = r.id;
+    $('#deleteResortBtn').hidden = !r.custom;
+    $('#saveResortBtn').hidden = !r.temp;
+    if (!r.temp) store.set('snowwx.resort', r.id);
+
+    // Keep the address bar shareable: searched locations get ?lat&lon&name, saved ones a clean URL
+    const url = new URL(location.href);
+    url.search = r.temp ? new URLSearchParams({ lat: r.lat.toFixed(4), lon: r.lon.toFixed(4), name: r.name }).toString() : '';
+    try { history.replaceState(null, '', url); } catch { /* ignore */ }
+
+    snowMap.setResort(r, store.get(`snowwx.guns.${r.id}`, []));
     load();
   }
+
+  // A searched or linked location that isn't saved to the list yet.
+  function openTempLocation({ name, region = '', lat, lon, zoom = 14 }) {
+    const id = `temp-${lat.toFixed(4)},${lon.toFixed(4)}`;
+    let r = state.resorts.find((x) => x.id === id || (Math.abs(x.lat - lat) < 1e-4 && Math.abs(x.lon - lon) < 1e-4));
+    if (!r) {
+      r = { id, name: name || `${lat.toFixed(3)}, ${lon.toFixed(3)}`, region, lat, lon, zoom, temp: true };
+      state.resorts = state.resorts.filter((x) => !x.temp);
+      state.resorts.push(r);
+      const sel = $('#resortSelect');
+      [...sel.options].filter((o) => o.value.startsWith('temp-')).forEach((o) => o.remove());
+      sel.add(new Option(`${r.name}${r.region ? ` — ${r.region}` : ''} (search)`, r.id));
+    }
+    selectResort(r.id);
+  }
+
+  // ---------- location search ----------
+
+  const COORDS_RE = /^\s*(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)\s*$/;
+
+  // OpenStreetMap Nominatim geocoder (free; search on submit only, per its usage policy)
+  async function geocode(q) {
+    const url = `https://nominatim.openstreetmap.org/search?${new URLSearchParams({ q, format: 'jsonv2', countrycodes: 'us', limit: '6', addressdetails: '1' })}`;
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error(`search service returned ${res.status}`);
+    return (await res.json()).map((p) => {
+      const a = p.address || {};
+      const town = a.city || a.town || a.village || a.hamlet || a.county || '';
+      const region = [town, a.state].filter(Boolean).join(', ');
+      return { name: p.name || p.display_name.split(',')[0], region, label: p.display_name, lat: +p.lat, lon: +p.lon };
+    });
+  }
+
+  function closeResults() {
+    $('#searchResults').hidden = true;
+    $('#searchResults').innerHTML = '';
+  }
+
+  function chooseResult(p) {
+    closeResults();
+    $('#searchInput').value = '';
+    $('#searchInput').blur();
+    openTempLocation({ name: p.name, region: p.region, lat: p.lat, lon: p.lon, zoom: 15 });
+  }
+
+  $('#searchForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const q = $('#searchInput').value.trim();
+    if (!q) return;
+    const m = COORDS_RE.exec(q);
+    if (m && Math.abs(+m[1]) <= 90 && Math.abs(+m[2]) <= 180) {
+      return chooseResult({ name: '', region: '', lat: +m[1], lon: +m[2] });
+    }
+    const box = $('#searchResults');
+    box.hidden = false;
+    box.innerHTML = '<div class="search-msg">Searching…</div>';
+    try {
+      const results = await geocode(q);
+      if (!results.length) {
+        box.innerHTML = `<div class="search-msg">No U.S. places found for “${q.replace(/[<>&]/g, '')}”. Try adding a town or state.</div>`;
+        return;
+      }
+      box.innerHTML = '';
+      for (const p of results) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'search-hit';
+        b.innerHTML = '<b></b><small></small>';
+        b.querySelector('b').textContent = p.name;
+        b.querySelector('small').textContent = p.label;
+        b.onclick = () => chooseResult(p);
+        box.appendChild(b);
+      }
+      box.querySelector('button').focus();
+    } catch (err) {
+      box.innerHTML = `<div class="search-msg">Search failed (${err.message}). Check your connection and try again.</div>`;
+    }
+  };
+  document.addEventListener('click', (e) => { if (!e.target.closest('#searchForm')) closeResults(); });
+  $('#searchForm').addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeResults();
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      const hits = [...document.querySelectorAll('.search-hit')];
+      if (!hits.length) return;
+      e.preventDefault();
+      const i = hits.indexOf(document.activeElement);
+      hits[(i + (e.key === 'ArrowDown' ? 1 : -1) + hits.length) % hits.length].focus();
+    }
+  });
+
+  $('#saveResortBtn').onclick = () => {
+    const r = state.resort;
+    if (!r.temp) return;
+    const saved = { ...r, id: `custom-${Date.now()}`, custom: true };
+    delete saved.temp;
+    store.set('snowwx.customResorts', [...store.get('snowwx.customResorts', []), saved]);
+    store.set(`snowwx.guns.${saved.id}`, store.get(`snowwx.guns.${r.id}`, []));
+    loadResorts();
+    selectResort(saved.id);
+  };
 
   // ---------- init ----------
 
@@ -391,10 +499,7 @@
   const qLat = parseFloat(qs.get('lat'));
   const qLon = parseFloat(qs.get('lon'));
   if (Number.isFinite(qLat) && Number.isFinite(qLon)) {
-    const r = { id: `url-${qLat},${qLon}`, name: qs.get('name') || `${qLat.toFixed(3)}, ${qLon.toFixed(3)}`, region: 'from link', lat: qLat, lon: qLon, zoom: +qs.get('zoom') || 14 };
-    state.resorts.push(r);
-    $('#resortSelect').add(new Option(`${r.name} — ${r.region}`, r.id));
-    selectResort(r.id);
+    openTempLocation({ name: qs.get('name') || '', lat: qLat, lon: qLon, zoom: +qs.get('zoom') || 14 });
   } else {
     selectResort(store.get('snowwx.resort', CFG.defaultResortId));
   }

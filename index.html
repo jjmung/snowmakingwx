@@ -19,8 +19,14 @@
         <div class="sub" id="placeLabel">—</div>
       </div>
     </div>
+    <form id="searchForm" class="search" role="search" autocomplete="off">
+      <input id="searchInput" type="search" placeholder="Search a resort, town, address or lat, lon" aria-label="Search location">
+      <button class="btn" type="submit">Go</button>
+      <div id="searchResults" class="search-results" hidden></div>
+    </form>
     <div class="controls">
       <select id="resortSelect" aria-label="Resort"></select>
+      <button id="saveResortBtn" class="btn ghost" hidden title="Save this location to the list">☆ Save</button>
       <button id="deleteResortBtn" class="btn ghost" hidden title="Remove this saved location">✕</button>
       <button id="refreshBtn" class="btn">Refresh</button>
     </div>
