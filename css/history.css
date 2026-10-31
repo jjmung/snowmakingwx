@@ -1,0 +1,31 @@
+/* Extra styles for history.html (builds on styles.css) */
+.brand h1 small { font-size: 12px; margin-left: 6px; }
+a.btn { text-decoration: none; display: inline-block; color: var(--text); }
+.ctl-row { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; margin-bottom: 8px; }
+.ctl { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.ctl input[type=range] { width: 240px; max-width: 100%; accent-color: var(--accent); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 10px; }
+.stat { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.stat .k { font-size: 12px; color: var(--muted); }
+.stat .v { font-size: 22px; font-weight: 650; }
+.stat .n { font-size: 12px; color: var(--muted); }
+.panel .chart-box + .chart-box { margin-top: 12px; }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 9px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+table.heat { width: auto; min-width: 360px; }
+table.heat td { padding: 3px 0; text-align: center; min-width: 58px; border: 1px solid var(--bg); font-size: 12px; cursor: default; }
+table.heat th { text-align: center; }
+table.heat td:first-child, table.heat th:first-child { text-align: left; padding-left: 4px; min-width: 64px; background: transparent; }
+.legend.inline { margin: 0; }
+.legend.inline i { background: var(--c); }
+#monSeg { flex-wrap: wrap; }
+.flag { color: var(--caution); }
+.tip { position: fixed; pointer-events: none; background: #000d; color: #fff; padding: 6px 9px; border-radius: 6px; font-size: 12px; z-index: 20; display: none; }
+.hint { margin: 6px 0 0; }
+.panel-head .hint { margin: 0; }
+.cache-bar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+.cache-bar .hint { flex: 1 1 280px; margin: 0; }
+code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 12px; }

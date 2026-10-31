@@ -1,0 +1,60 @@
+name: Refresh climate cache
+
+# Builds data/cache/*.json for the History page so visitors do not hit the Open-Meteo rate limits.
+# Runs monthly, and on demand from the Actions tab (optionally adding a new place).
+on:
+  schedule:
+    - cron: '17 6 5 * *'
+  workflow_dispatch:
+    inputs:
+      lat:
+        description: 'Add a place: latitude (leave blank to only refresh existing places)'
+        required: false
+      lon:
+        description: 'Add a place: longitude'
+        required: false
+      name:
+        description: 'Add a place: display name'
+        required: false
+      force:
+        description: 'Re-fetch even if the cache is under 30 days old'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-cache
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build cache
+        env:
+          IN_LAT: ${{ inputs.lat }}
+          IN_LON: ${{ inputs.lon }}
+          IN_NAME: ${{ inputs.name }}
+          IN_FORCE: ${{ inputs.force }}
+        run: |
+          args=()
+          if [ -n "$IN_LAT" ] && [ -n "$IN_LON" ]; then args+=("$IN_LAT" "$IN_LON" "${IN_NAME:-}"); fi
+          if [ "$IN_FORCE" = "true" ]; then args+=(--force); fi
+          node scripts/build-cache.mjs "${args[@]}"
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then echo "No changes"; else
+            git commit -m "Refresh climate cache"
+            git pull --rebase
+            git push
+          fi
