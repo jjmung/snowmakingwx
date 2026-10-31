@@ -2,6 +2,9 @@
 window.SNOWWX_CONFIG = {
   defaultResortId: 'granite-peak',
 
+  // GitHub repo that holds the climate cache (data/cache) and the refresh workflow.
+  repo: 'jjmung/snowmakingwx',
+
   // Built-in resorts. Additional resorts can be saved from the map ("Save map center as resort").
   resorts: [
     { id: 'granite-peak', name: 'Granite Peak', region: 'Wausau, WI', lat: 44.9260, lon: -89.6845, zoom: 16 },

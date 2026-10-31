@@ -321,6 +321,7 @@
     url.search = r.temp ? new URLSearchParams({ lat: r.lat.toFixed(4), lon: r.lon.toFixed(4), name: r.name }).toString() : '';
     try { history.replaceState(null, '', url); } catch { /* ignore */ }
 
+    $('#histLink').href = `history.html?${new URLSearchParams({ lat: r.lat.toFixed(4), lon: r.lon.toFixed(4), name: r.name })}`;
     snowMap.setResort(r, store.get(`snowwx.guns.${r.id}`, []));
     load();
   }

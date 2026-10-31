@@ -10,9 +10,18 @@ Hourly snowmaking forecast built on the free National Weather Service API (api.w
 - **Location search**: type a resort, town, address or `lat, lon` in the header (U.S. only; geocoding by OpenStreetMap Nominatim). The address bar updates so the link can be shared, and **☆ Save** adds the place to your list.
 - **Locations**: Granite Peak is the default. "Save map center as location" adds a resort, or open a link like `?lat=44.926&lon=-89.684&name=My%20Hill`.
 
+- **Climate history** (`history.html`, linked from the header): for the current or any searched location, 50+ winters of Nov–Apr temperature by month against an adjustable snowmaking threshold (typical winter, nights cold enough, winter-by-month heatmap, trends), optional wet-bulb snowmaking hours, and seasonal snowfall in El Niño and La Niña winters. Data comes live from the Open-Meteo ERA5 archive; ENSO winters are classed from NOAA ONI values in `js/enso.js`.
+
 Wet bulb is computed psychrometrically from NWS temperature and humidity, corrected for the grid cell's elevation.
 Thresholds, wind limits and gun parameters (throw, hang time) live in `js/config.js`.
 Guns and saved locations are stored in the browser's localStorage, so each device has its own.
+
+## Climate-history cache
+The History page calls the free Open-Meteo archive, which has rate limits, so results are cached in layers:
+1. **Repository cache** (`data/cache/<lat>_<lon>.json`, listed in `data/index.json`): shipped with the site and loaded first. Built by `scripts/build-cache.mjs` for every place in `data/locations.json`; the **Refresh climate cache** GitHub Action reruns it monthly and commits the result. To add a place, use the History page's **Add to repository cache** button (opens the workflow; enter the lat/lon/name it shows), or run `node scripts/build-cache.mjs <lat> <lon> "<name>"` and commit `data/`.
+2. **Browser cache** (IndexedDB): anything fetched live is kept on that device, including hourly wet-bulb results. **Download cache file** saves a place's file so it can be dropped into `data/cache/`.
+3. **Live API**: only when neither cache has the place (or the cache is over 60 days old; the older copy is used if the live call fails). Place-search results are also remembered for 30 days.
+Cache keys round coordinates to 0.01°, so nearby searches share a file.
 
 ## Run locally
     python3 -m http.server 8000
