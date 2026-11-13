@@ -18,6 +18,19 @@
     playTimer: null,
   };
 
+  // Adjustable wet bulb limit: the go / no-go line on the chart. Sliding it moves the top
+  // of the "Marginal" zone; colder zones keep their configured limits but never sit above it.
+  const Z = CFG.wetBulbZones;
+  const BASE_MAX = Z.map((z) => z.max);
+  const DEFAULT_LIMIT = BASE_MAX[Z.length - 2];
+  const clampLimit = (v) => (Number.isFinite(v) ? Math.max(15, Math.min(35, Math.round(v * 2) / 2)) : DEFAULT_LIMIT);
+  const wbLimit = () => Z[Z.length - 2].max;
+
+  function applyWbLimit(limit) {
+    for (let i = 0; i < Z.length - 1; i++) Z[i].max = i === Z.length - 2 ? limit : Math.min(BASE_MAX[i], limit);
+  }
+  applyWbLimit(clampLimit(store.get('snowwx.wbLimit', DEFAULT_LIMIT)));
+
   const zoneFor = (wbF) => CFG.wetBulbZones.find((z) => wbF <= z.max);
   function windFlag(h) {
     const w = CFG.wind;
@@ -288,10 +301,28 @@
     el.textContent = msg;
   }
 
+  function syncWbLimitUI() {
+    $('#wbLimitRange').value = wbLimit();
+    $('#wbLimitVal').textContent = `${wbLimit()}°F`;
+    $('#wbLimitReset').hidden = wbLimit() === DEFAULT_LIMIT;
+  }
+
+  function setWbLimit(v) {
+    const limit = clampLimit(v);
+    applyWbLimit(limit);
+    store.set('snowwx.wbLimit', limit);
+    syncWbLimitUI();
+    renderLegend();
+    if (!state.data) return;
+    for (const h of state.data.hours) h.zone = zoneFor(h.wbF);
+    render();
+  }
+
   function renderLegend() {
     $('#legend').innerHTML =
       CFG.wetBulbZones
         .map((z, i) => {
+          if (i > 0 && z.max <= CFG.wetBulbZones[i - 1].max) return ''; // zone squeezed out by the limit
           const lo = i === 0 ? '' : `${CFG.wetBulbZones[i - 1].max}–`;
           const range = z.max === Infinity ? `> ${CFG.wetBulbZones[i - 1].max}°F` : i === 0 ? `≤ ${z.max}°F` : `${lo}${z.max}°F`;
           return `<span><i style="--c:${z.color}"></i>${z.label} <small>${range}</small></span>`;
@@ -473,6 +504,12 @@
     render();
   };
   $('#hourSlider').oninput = (e) => select(+e.target.value);
+
+  $('#wbLimitRange').oninput = (e) => setWbLimit(+e.target.value);
+  $('#wbLimitDown').onclick = () => setWbLimit(wbLimit() - 1);
+  $('#wbLimitUp').onclick = () => setWbLimit(wbLimit() + 1);
+  $('#wbLimitReset').onclick = () => setWbLimit(DEFAULT_LIMIT);
+  syncWbLimitUI();
 
   $('#playBtn').onclick = () => {
     if (state.playTimer) {
