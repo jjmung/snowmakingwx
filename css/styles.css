@@ -256,3 +256,10 @@ footer code { color: var(--text); }
 }
 
 a.btn { text-decoration: none; display: inline-block; color: var(--text); }
+
+/* Wet bulb limit slider */
+.wb-limit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; font-size: 13px; }
+.wb-limit label { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.wb-limit .swatch { width: 16px; border-top: 2px dashed #ffd43b; }
+.wb-limit input[type=range] { flex: 1 1 140px; max-width: 260px; min-width: 0; accent-color: #ffd43b; }
+.wb-limit b { min-width: 52px; }

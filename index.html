@@ -53,6 +53,14 @@
 
     <section class="panel">
       <div class="panel-head"><h2>Wet bulb, temperature &amp; humidity</h2><span class="hint">Tap the chart to pick an hour</span></div>
+      <div class="wb-limit" id="wbLimit">
+        <label for="wbLimitRange"><i class="swatch" aria-hidden="true"></i>Wet bulb limit</label>
+        <button id="wbLimitDown" class="btn icon" type="button" aria-label="Lower wet bulb limit 1 degree">−</button>
+        <input type="range" id="wbLimitRange" min="15" max="35" step="0.5" aria-label="Wet bulb limit in °F">
+        <button id="wbLimitUp" class="btn icon" type="button" aria-label="Raise wet bulb limit 1 degree">+</button>
+        <b id="wbLimitVal"></b>
+        <button id="wbLimitReset" class="btn ghost" type="button" hidden>Reset</button>
+      </div>
       <div class="chart-scroll"><div class="chart-box"><canvas id="wbChart"></canvas></div></div>
     </section>
 
