@@ -110,6 +110,20 @@
     </section>
 
     <section class="panel">
+      <div class="panel-head"><h2>Daily temperature by winter</h2>
+        <div class="day-pick">
+          <label>Winter <select id="dayYear" aria-label="Winter"></select></label>
+          <label>From <input type="date" id="dayFrom" aria-label="Start date"></label>
+          <label>To <input type="date" id="dayTo" aria-label="End date"></label>
+          <button id="dayReset" class="btn ghost" type="button" hidden>Reset dates</button>
+        </div>
+      </div>
+      <p id="dayTxt" class="hint"></p>
+      <div class="chart-box"><canvas id="dayChart"></canvas></div>
+      <p class="hint">Average (mean) temperature for each day of the chosen winter. The dashed line is the average for the same calendar days over the winters shown in Settings. Dates can run from November 1 to May 1.</p>
+    </section>
+
+    <section class="panel">
       <div class="panel-head"><h2>Snowfall in El Niño and La Niña winters</h2>
         <div class="seg" id="baseSeg">
           <button data-b="record" class="on">Full record mean</button>

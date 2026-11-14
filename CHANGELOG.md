@@ -4,6 +4,22 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.5 — November 13, 2026
+
+**History page: daily temperature by winter** ([PR #5](https://github.com/jjmung/snowmakingwx/pull/5))
+
+Added
+- **Daily temperature by winter** panel, between Snowmaking hours and the El Niño section. A line chart of the average (mean) temperature for each day of one winter.
+- **Winter dropdown** covering 1950-51 onward, newest first. The current winter is included and marked "(in progress)".
+- **From / To calendar pickers**, limited to November 1 through May 1 of the chosen winter. The default is **November 1 to February 1**; "Reset dates" restores it, and the range is remembered on the device.
+- A dashed comparison line: the average for the same calendar days over the winters shown in Settings.
+- The snowmaking threshold line, and a summary sentence with the period average, the difference from the multi-winter average, the coldest and warmest day, and the number of days at or below the threshold.
+
+Notes
+- The date range on this chart is separate from the production window in Settings.
+
+---
+
 ## 1.4 — November 13, 2026
 
 **History page: production window** ([PR #3](https://github.com/jjmung/snowmakingwx/pull/3))
