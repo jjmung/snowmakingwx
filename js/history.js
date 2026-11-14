@@ -12,6 +12,8 @@
 
   const MON = [11, 12, 1, 2, 3, 4]; // winter months in order
   const MN = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'];
+  const MEND = ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May']; // MEND[i] 1st = end of winter month i
+  const WIN_DEFAULT = [0, 3]; // production window: Nov 1 up to Feb 1 (month indexes, end exclusive)
   const MEASURE = { min: 'daily low', mean: 'daily mean', max: 'daily high' };
   const PHASE_COLOR = {
     'El Niño': { weak: '#a5d8ff', moderate: '#74c0fc', strong: '#339af0', 'very strong': '#1c7ed6' },
@@ -33,6 +35,10 @@
     measure: store.get('snowwx.hist.measure', 'min'),
     span: store.get('snowwx.hist.span', 50),
     month: 'all',
+    win: (() => {
+      const w = store.get('snowwx.hist.win', WIN_DEFAULT);
+      return Array.isArray(w) && Number.isInteger(w[0]) && Number.isInteger(w[1]) && w[0] >= 0 && w[0] < w[1] && w[1] <= 6 ? w : [...WIN_DEFAULT];
+    })(),
     base: 'record',
     phase: 'both',
     bins: null, // bins[y][mi] = Int32Array of wet-bulb °F histogram
@@ -334,6 +340,11 @@
 
   const shown = () => state.winters.slice(-Math.min(state.span, state.winters.length));
   const val = (y, mi) => state.wm[y][mi][state.measure];
+  // Production window: the months the trend, nights-per-winter and snowmaking-hours totals cover.
+  const inWin = (mi) => mi >= state.win[0] && mi < state.win[1];
+  const winIdx = () => MN.map((_, mi) => mi).filter(inWin);
+  const winLabel = () => `${MN[state.win[0]]} 1–${MEND[state.win[1] - 1]} 1`;
+  const winColors = (on, off = 'rgba(77,171,247,0.25)') => MN.map((_, mi) => (inWin(mi) ? on : off));
 
   // ---------- render ----------
   function updateNote() { $('#dataNote').textContent = `${state.noteBase || ''}${state.source ? ` · from ${state.source}` : ''}`; }
@@ -357,14 +368,14 @@
     const top = Math.max(...pct);
     const best = MN.filter((_, i) => pct[i] === top);
     const half = MN.filter((_, i) => pct[i] >= 50);
-    const xs = W, ys = W.map((y) => avg(MON.map((_, mi) => val(y, mi))));
+    const xs = W, ys = W.map((y) => avg(winIdx().map((mi) => val(y, mi))));
     const rg = regress(xs, ys);
-    const nightsPer = avg(W.map((y) => state.wm[y].reduce((s, o) => s + o.lows.filter((v) => v <= t).length, 0)));
+    const nightsPer = avg(W.map((y) => winIdx().reduce((s, mi) => s + state.wm[y][mi].lows.filter((v) => v <= t).length, 0)));
     $('#stats').innerHTML = [
       stat(`Months where the average ${MEASURE[m]} is ≤ ${t} °F`, half.length ? half.join(', ') : 'None', 'in at least half of the winters shown'),
       stat(best.length > 1 ? 'Most reliable months (tied)' : 'Most reliable month', best.join(', '), `${Math.round(top)}% of winters at or below ${t} °F`),
-      stat('Nights with a low ≤ ' + t + ' °F', f0(nightsPer), 'per winter, Nov–Apr (average)'),
-      rg ? stat('Nov–Apr trend', `${rg.slope * 10 >= 0 ? '+' : ''}${(rg.slope * 10).toFixed(1)} °F`, `per decade in the ${MEASURE[m]}; winters vary a lot, so treat it as rough`) : '',
+      stat('Nights with a low ≤ ' + t + ' °F', f0(nightsPer), `per winter, ${winLabel()} (average)`),
+      rg ? stat(`${winLabel()} trend`, `${rg.slope * 10 >= 0 ? '+' : ''}${(rg.slope * 10).toFixed(1)} °F`, `per decade in the ${MEASURE[m]}; winters vary a lot, so treat it as rough`) : '',
     ].join('');
   }
   function stat(k, v, n) { return `<div class="stat"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span><span class="n">${esc(n)}</span></div>`; }
@@ -393,7 +404,7 @@
     const nights = MN.map((_, mi) => avg(W.map((y) => state.wm[y][mi].lows.filter((v) => v <= t).length)));
     chart('nightsChart', {
       type: 'bar',
-      data: { labels: MN, datasets: [{ label: `Days with a low ≤ ${t} °F`, data: nights, backgroundColor: '#4dabf7' }] },
+      data: { labels: MN, datasets: [{ label: `Days with a low ≤ ${t} °F`, data: nights, backgroundColor: winColors('#4dabf7') }] },
       options: { ...baseOpts('days per month'), plugins: { legend: { display: false } } },
     });
   }
@@ -415,15 +426,15 @@
 
   function renderMonthSeg() {
     const seg = $('#monSeg');
-    seg.innerHTML = ['all', ...MN].map((m) => `<button data-m="${m}" class="${state.month === m ? 'on' : ''}">${m === 'all' ? 'Nov–Apr' : m}</button>`).join('');
+    seg.innerHTML = ['all', ...MN].map((m) => `<button data-m="${m}" class="${state.month === m ? 'on' : ''}">${m === 'all' ? winLabel() : m}</button>`).join('');
     seg.querySelectorAll('button').forEach((b) => { b.onclick = () => { state.month = b.dataset.m; renderMonthSeg(); renderTrend(shown()); }; });
   }
 
   function renderTrend(W) {
     const mi = state.month === 'all' ? -1 : MN.indexOf(state.month);
-    const ys = W.map((y) => (mi < 0 ? avg(MON.map((_, k) => val(y, k))) : val(y, mi)));
+    const ys = W.map((y) => (mi < 0 ? avg(winIdx().map((k) => val(y, k))) : val(y, mi)));
     const rg = regress(W, ys);
-    const label = mi < 0 ? 'Nov–Apr' : state.month;
+    const label = mi < 0 ? winLabel() : state.month;
     $('#trendTxt').textContent = rg
       ? `${label} average ${MEASURE[state.measure]}: ${rg.slope * 10 >= 0 ? '+' : ''}${(rg.slope * 10).toFixed(1)} °F per decade across ${W.length} winters (${yl(W[0])} to ${yl(W[W.length - 1])}). Year-to-year swings are large, so the trend line is a rough guide.`
       : '';
@@ -492,18 +503,21 @@
     const W = state.binsWinters.filter((y) => state.bins[y]);
     const t = state.thr;
     $('#hoursBody').hidden = false;
-    const perWinter = W.map((y) => MON.reduce((s, _, mi) => s + hoursAt(y, mi, t), 0));
+    const WI = winIdx();
+    $('#hoursWinLabel').textContent = winLabel();
+    const perWinter = W.map((y) => WI.reduce((s, mi) => s + hoursAt(y, mi, t), 0));
     const perMonth = MN.map((_, mi) => avg(W.map((y) => hoursAt(y, mi, t))));
+    const bestMi = WI.reduce((b, mi) => (perMonth[mi] > perMonth[b] ? mi : b), WI[0]);
     const bi = perWinter.indexOf(Math.max(...perWinter)), wi = perWinter.indexOf(Math.min(...perWinter));
     $('#hoursStats').innerHTML = [
-      stat(`Hours with wet bulb ≤ ${t} °F`, Math.round(avg(perWinter)).toLocaleString(), 'per winter, Nov–Apr (average)'),
+      stat(`Hours with wet bulb ≤ ${t} °F`, Math.round(avg(perWinter)).toLocaleString(), `per winter, ${winLabel()} (average)`),
       stat('Best winter', `${Math.round(perWinter[bi]).toLocaleString()} h`, yl(W[bi])),
       stat('Worst winter', `${Math.round(perWinter[wi]).toLocaleString()} h`, yl(W[wi])),
-      stat('Best month', MN[perMonth.indexOf(Math.max(...perMonth))], `${Math.round(Math.max(...perMonth))} h on average`),
+      stat('Best month in window', MN[bestMi], `${Math.round(perMonth[bestMi])} h on average`),
     ].join('');
     chart('hoursMonthChart', {
       type: 'bar',
-      data: { labels: MN, datasets: [{ label: `Average hours per month with wet bulb ≤ ${t} °F`, data: perMonth, backgroundColor: '#4dabf7' }] },
+      data: { labels: MN, datasets: [{ label: `Average hours per month with wet bulb ≤ ${t} °F`, data: perMonth, backgroundColor: winColors('#4dabf7') }] },
       options: baseOpts('hours'),
     });
     const rg = regress(W, perWinter);
@@ -512,7 +526,7 @@
       data: {
         labels: W.map(yl),
         datasets: [
-          { label: `Snowmaking hours per winter (wet bulb ≤ ${t} °F)`, data: perWinter, backgroundColor: '#4dabf7' },
+          { label: `Snowmaking hours per winter, ${winLabel()} (wet bulb ≤ ${t} °F)`, data: perWinter, backgroundColor: '#4dabf7' },
           rg ? { type: 'line', label: 'Trend', data: W.map((y) => rg.at(y)), borderColor: '#ff922b', borderWidth: 2.5, pointRadius: 0 } : null,
         ].filter(Boolean),
       },
@@ -612,7 +626,22 @@
     $('#thrOut').textContent = state.thr;
     document.querySelectorAll('#measureSeg button').forEach((b) => b.classList.toggle('on', b.dataset.m === state.measure));
     document.querySelectorAll('#spanSeg button').forEach((b) => b.classList.toggle('on', +b.dataset.n === state.span));
+    const [ws, we] = state.win;
+    $('#winStart').innerHTML = MN.map((m, i) => `<option value="${i}"${i === ws ? ' selected' : ''}>${m} 1</option>`).join('');
+    $('#winEnd').innerHTML = MEND.map((m, i) => (i + 1 > ws ? `<option value="${i + 1}"${i + 1 === we ? ' selected' : ''}>${m} 1</option>` : '')).join('');
+    $('#winReset').hidden = ws === WIN_DEFAULT[0] && we === WIN_DEFAULT[1];
+    $('#hoursWinLabel').textContent = winLabel();
   }
+  function setWin(ws, we) {
+    if (we <= ws) we = ws + 1;
+    state.win = [ws, we];
+    store.set('snowwx.hist.win', state.win);
+    syncControls();
+    if (state.daily) renderAll();
+  }
+  $('#winStart').onchange = (e) => setWin(+e.target.value, state.win[1]);
+  $('#winEnd').onchange = (e) => setWin(state.win[0], +e.target.value);
+  $('#winReset').onclick = () => setWin(...WIN_DEFAULT);
   $('#thr').oninput = (e) => {
     state.thr = +e.target.value; store.set('snowwx.hist.thr', state.thr);
     $('#thrOut').textContent = state.thr;

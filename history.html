@@ -54,13 +54,21 @@
             <button data-n="75">All</button>
           </div>
         </div>
+        <div class="ctl">Production window
+          <div class="win-pick">
+            <select id="winStart" aria-label="Production window start"></select>
+            <span>to</span>
+            <select id="winEnd" aria-label="Production window end"></select>
+            <button id="winReset" class="btn ghost" type="button" hidden>Reset</button>
+          </div>
+        </div>
       </div>
-      <p class="hint">Snowmaking depends on wet-bulb temperature, which runs below air temperature when the air is dry. Set the threshold to what your guns need; 28 °F is a common starting point.</p>
+      <p class="hint">Snowmaking depends on wet-bulb temperature, which runs below air temperature when the air is dry. Set the threshold to what your guns need; 28 °F is a common starting point. The production window sets which part of the winter the trend, the nights-per-winter figure and the snowmaking-hours analysis cover; the month-by-month charts and tables still show November through April.</p>
       <div class="stats" id="stats"></div>
       <div class="cache-bar">
         <span class="hint">Climate data is cached in your browser and in the repository, so repeat visits don't hit the data service.</span>
-        <button id="cacheDownloadBtn" class="btn ghost" title="Download this place's cache file">Download cache file</button>
-        <button id="cacheRequestBtn" class="btn ghost" title="Ask the repository to cache this place for everyone">Add to repository cache</button>
+        <button id="cacheDownloadBtn" class="btn ghost" hidden title="Download this place's cache file">Download cache file</button>
+        <button id="cacheRequestBtn" class="btn ghost" hidden title="Ask the repository to cache this place for everyone">Add to repository cache</button>
       </div>
       <p id="cacheHelp" class="hint" hidden></p>
     </section>
@@ -72,7 +80,7 @@
     </section>
 
     <section class="panel">
-      <div class="panel-head"><h2>Nights cold enough to run</h2><span class="hint">Average number of days per month with a daily low at or below the threshold</span></div>
+      <div class="panel-head"><h2>Nights cold enough to run</h2><span class="hint">Average number of days per month with a daily low at or below the threshold. Dimmed months are outside the production window.</span></div>
       <div class="chart-box short"><canvas id="nightsChart"></canvas></div>
     </section>
 
@@ -92,7 +100,7 @@
     <section class="panel">
       <div class="panel-head"><h2>Snowmaking hours</h2>
         <button id="hoursBtn" class="btn">Load hourly data</button></div>
-      <p class="hint">Counts hours with wet-bulb temperature at or below the threshold, from hourly reanalysis temperature and humidity (Stull wet-bulb formula, sea-level pressure). Downloads about 1 MB per 5 winters unless the place is already cached, so it only loads when asked.</p>
+      <p class="hint">Counts hours with wet-bulb temperature at or below the threshold, from hourly reanalysis temperature and humidity (Stull wet-bulb formula, sea-level pressure). Downloads about 1 MB per 5 winters unless the place is already cached, so it only loads when asked. Totals, best and worst winters and the trend cover the production window chosen in Settings (<b id="hoursWinLabel"></b>); dimmed months in the monthly chart are outside it.</p>
       <div id="hoursProgress" class="hint"></div>
       <div id="hoursBody" hidden>
         <div class="stats" id="hoursStats"></div>
@@ -121,7 +129,7 @@
     </section>
 
     <footer>
-      <p><b>Data.</b> <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> (ERA5 / ERA5-Land reanalysis, 1950 onward), fetched live for the chosen coordinates. It is a gridded model of the location, not a weather station record, so it can run a few degrees off a nearby station, and modeled snowfall is only a rough guide. Winters are November–April; the current winter is excluded until it finishes.</p>
+      <p><b>Data.</b> <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> (ERA5 / ERA5-Land reanalysis, 1950 onward), fetched live for the chosen coordinates. It is a gridded model of the location, not a weather station record, so it can run a few degrees off a nearby station, and modeled snowfall is only a rough guide. Winters are November–April; the current winter is excluded until it finishes. The production window (default November 1 to February 1) works in whole months, so "to February 1" means through January 31.</p>
       <p><b>El Niño and La Niña.</b> Winters are classed from NOAA's Oceanic Niño Index (ONI, 3-month Niño 3.4 anomalies): El Niño when October–January readings stay at or above +0.5 and La Niña when they stay at or below −0.5, with strength from the peak reading. The table and the rule are in <code>js/enso.js</code>. NOAA's official episode list uses slightly different rules (and has begun using a relative index, RONI), so a few winters can differ in strength or class. The phase tilts the odds at best: snowfall in any single winter varies a lot.</p>
     </footer>
   </main>
