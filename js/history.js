@@ -39,6 +39,9 @@
       const w = store.get('snowwx.hist.win', WIN_DEFAULT);
       return Array.isArray(w) && Number.isInteger(w[0]) && Number.isInteger(w[1]) && w[0] >= 0 && w[0] < w[1] && w[1] <= 6 ? w : [...WIN_DEFAULT];
     })(),
+    dayYear: null, // winter start year for the daily chart; null = most recent winter that reaches the end date
+    dayFrom: '11-01', // MM-DD within the winter (Nov 1 .. May 1)
+    dayTo: '02-01',
     base: 'record',
     phase: 'both',
     bins: null, // bins[y][mi] = Int32Array of wet-bulb °F histogram
@@ -355,7 +358,7 @@
     state.noteBase = `${W.length} winters, ${yl(W[0])} to ${yl(W[W.length - 1])} · data through ${state.lastDate}${state.elevM != null ? ` · model elevation ${Math.round(state.elevM * 3.281)} ft` : ''}`;
     updateNote();
     renderStats(W); renderProfile(W); renderNights(W); renderHeat(W); renderMonthSeg(); renderTrend(W);
-    renderSnow(); renderTable(W);
+    renderSnow(); renderTable(W); renderDaily();
     if (!state.bins && state.payload && state.payload.bins && W.every((y) => state.payload.bins[y])) {
       state.bins = state.payload.bins; state.binsWinters = W; $('#hoursBtn').disabled = true; // already cached: no download needed
     }
@@ -534,6 +537,94 @@
     });
   }
 
+  // ---- daily temperature for one winter ----
+  const DAY_DEFAULT = ['11-01', '02-01'];
+  const MNAME = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // 'MM-DD' in the winter starting in year y -> 'YYYY-MM-DD' (Feb 29 falls back to Feb 28 in non-leap years)
+  function winterDate(y, md) {
+    const m = +md.slice(0, 2), yr = m >= 11 ? y : y + 1;
+    const last = new Date(Date.UTC(yr, m, 0)).getUTCDate();
+    return `${yr}-${md.slice(0, 2)}-${String(Math.min(+md.slice(3), last)).padStart(2, '0')}`;
+  }
+  const dayIndex = (iso) => Math.round((Date.parse(iso + 'T00:00:00Z') - Date.parse(state.daily.dates[0] + 'T00:00:00Z')) / 864e5);
+  const dayMean = (iso) => { const i = dayIndex(iso); return i >= 0 && i < state.daily.mean.length ? state.daily.mean[i] : null; };
+  const dayWinters = () => {
+    const out = [];
+    for (let y = +state.daily.dates[0].slice(0, 4); `${y}-11-01` <= state.lastDate; y++) if (`${y}-11-01` >= state.daily.dates[0]) out.push(y);
+    return out;
+  };
+
+  function renderDaily() {
+    const years = dayWinters();
+    if (!years.length) return;
+    let y = state.dayYear;
+    if (!years.includes(y)) {
+      // default: the latest winter with data through the chosen end date
+      y = [...years].reverse().find((w) => winterDate(w, state.dayTo) <= state.lastDate) ?? years[years.length - 1];
+    }
+    const sel = $('#dayYear');
+    sel.innerHTML = [...years].reverse().map((w) => `<option value="${w}"${w === y ? ' selected' : ''}>${yl(w)}${`${w + 1}-04-30` > state.lastDate ? ' (in progress)' : ''}</option>`).join('');
+    const from = winterDate(y, state.dayFrom), to = winterDate(y, state.dayTo);
+    for (const [id, v] of [['#dayFrom', from], ['#dayTo', to]]) {
+      const el = $(id);
+      el.min = `${y}-11-01`; el.max = `${y + 1}-05-01`; el.value = v;
+    }
+    $('#dayReset').hidden = state.dayFrom === DAY_DEFAULT[0] && state.dayTo === DAY_DEFAULT[1];
+
+    const W = shown();
+    const labels = [], cur = [], norm = [];
+    for (let t = Date.parse(from + 'T00:00:00Z'), end = Date.parse(to + 'T00:00:00Z'); t <= end; t += 864e5) {
+      const iso = new Date(t).toISOString().slice(0, 10), md = iso.slice(5);
+      labels.push(`${MNAME[+md.slice(0, 2) - 1]} ${+md.slice(3)}`);
+      cur.push(dayMean(iso));
+      const vs = W.map((w) => (md === '02-29' && winterDate(w, md).slice(5) !== md ? null : dayMean(winterDate(w, md)))).filter((v) => v != null);
+      norm.push(vs.length ? avg(vs) : null);
+    }
+    const have = cur.map((v, i) => (v == null ? -1 : i)).filter((i) => i >= 0);
+    const range = `${labels[0]} to ${labels[labels.length - 1]}, ${yl(y)}`;
+    if (!have.length) {
+      $('#dayTxt').textContent = `${range}: no data yet for these dates (data runs through ${state.lastDate}).`;
+    } else {
+      const vals = have.map((i) => cur[i]);
+      const a = avg(vals), n = avg(have.map((i) => norm[i]).filter((v) => v != null));
+      const ci = have[vals.indexOf(Math.min(...vals))], wi = have[vals.indexOf(Math.max(...vals))];
+      const cold = vals.filter((v) => v <= state.thr).length;
+      $('#dayTxt').textContent = `${range}: average ${f1(a)} °F`
+        + (n != null ? ` (${a - n >= 0 ? '+' : '−'}${f1(Math.abs(a - n))} °F vs the ${W.length}-winter average of ${f1(n)} °F)` : '')
+        + `. Coldest day ${labels[ci]} at ${f1(cur[ci])} °F, warmest ${labels[wi]} at ${f1(cur[wi])} °F. `
+        + `${cold} of ${vals.length} days averaged at or below ${state.thr} °F.`
+        + (have.length < labels.length ? ` Data runs through ${state.lastDate}, so ${labels.length - have.length} days are not in yet.` : '');
+    }
+    chart('dayChart', {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: `${yl(y)} daily average`, data: cur, borderColor: '#74c0fc', backgroundColor: '#74c0fc', borderWidth: 2, pointRadius: labels.length > 60 ? 0 : 2, tension: 0.15 },
+          { label: `${W.length}-winter average`, data: norm, borderColor: '#e6edf7', backgroundColor: '#e6edf7', borderDash: [5, 4], borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+          { label: `Threshold ${state.thr} °F`, data: labels.map(() => state.thr), borderColor: '#69db7c', backgroundColor: '#69db7c', borderWidth: 2, pointRadius: 0 },
+        ],
+      },
+      options: baseOpts('°F', { x: { ticks: { color: TXT, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } } }),
+    });
+  }
+
+  $('#dayYear').onchange = (e) => { state.dayYear = +e.target.value; renderDaily(); };
+  function setDayDate(which, iso) {
+    const y = +$('#dayYear').value;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return renderDaily(); // cleared or partial entry: put the old date back
+    iso = iso < `${y}-11-01` ? `${y}-11-01` : iso > `${y + 1}-05-01` ? `${y + 1}-05-01` : iso;
+    state[which] = iso.slice(5);
+    // keep the range in order: move the other end along if they cross
+    if (winterDate(y, state.dayFrom) > winterDate(y, state.dayTo)) state[which === 'dayFrom' ? 'dayTo' : 'dayFrom'] = state[which];
+    state.dayYear = y;
+    store.set('snowwx.hist.dayRange', [state.dayFrom, state.dayTo]);
+    renderDaily();
+  }
+  $('#dayFrom').onchange = (e) => setDayDate('dayFrom', e.target.value);
+  $('#dayTo').onchange = (e) => setDayDate('dayTo', e.target.value);
+  $('#dayReset').onclick = () => { [state.dayFrom, state.dayTo] = DAY_DEFAULT; store.set('snowwx.hist.dayRange', DAY_DEFAULT); renderDaily(); };
+
   // ---- snowfall & El Niño / La Niña ----
   function renderSnow() {
     const ys = Object.keys(state.seasons).map(Number).sort((a, b) => a - b);
@@ -664,6 +755,12 @@
       if (state.daily) renderSnow();
     };
   });
+
+  {
+    const r = store.get('snowwx.hist.dayRange', null);
+    const ok = (s) => typeof s === 'string' && /^(11|12|0[1-4])-\d{2}$|^05-01$/.test(s);
+    if (Array.isArray(r) && ok(r[0]) && ok(r[1])) [state.dayFrom, state.dayTo] = r;
+  }
 
   // ---------- start ----------
   loadResorts();

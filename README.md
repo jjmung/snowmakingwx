@@ -6,7 +6,7 @@ Live site: **https://jjmung.github.io/snowmakingwx/**
 
 SnowmakingWX turns the free National Weather Service forecast into the numbers a snowmaker actually uses: wet bulb by the hour, when the windows open and close, where the wind will carry the plume, and how this winter stacks up against the last 75. It is plain HTML and JavaScript, with no build step, no server and no API key.
 
-Current version: **1.4** (November 13, 2026). See [CHANGELOG.md](CHANGELOG.md) for version notes.
+Current version: **1.5** (November 13, 2026). See [CHANGELOG.md](CHANGELOG.md) for version notes.
 
 ---
 
@@ -80,6 +80,7 @@ Keyboard: the left and right arrow keys step through the hours.
 - **Every winter, every month.** A heat map of each winter since 1950, colored by distance from the threshold.
 - **How each month has changed.** Trend per decade for the production window or any single month.
 - **Snowmaking hours.** Hours with wet bulb at or below the threshold, from hourly temperature and humidity. Loaded on request because it is a larger download.
+- **Daily temperature by winter.** A line chart of the average temperature for each day of one winter. Pick the winter from a dropdown (1950-51 onward, including the one in progress) and set the From and To dates with calendar pickers, anywhere from November 1 to May 1. The default is November 1 to February 1. A dashed line shows the average for the same days over the winters shown in Settings, and a summary gives the period average, coldest and warmest day, and days at or below the threshold.
 - **Snowfall in El Niño and La Niña winters.** Seasonal snowfall by ENSO phase and strength, compared with the full-record or 1991–2020 mean.
 - **Monthly summary table.**
 
@@ -110,6 +111,7 @@ Keyboard: the left and right arrow keys step through the hours.
 | Temperature measure | History | Daily low |
 | Winters shown | History | 50 |
 | Production window | History | Nov 1 – Feb 1 |
+| Daily temperature date range | History | Nov 1 – Feb 1 |
 
 **In `js/config.js`** (applies to everyone):
 
