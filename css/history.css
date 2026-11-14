@@ -29,3 +29,6 @@ table.heat td:first-child, table.heat th:first-child { text-align: left; padding
 .cache-bar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
 .cache-bar .hint { flex: 1 1 280px; margin: 0; }
 code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+/* Production window picker */
+.win-pick { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
