@@ -21,6 +21,8 @@
   };
   const enColor = (e) => (e ? PHASE_COLOR[e.phase][e.strength] : OTHER_COLOR);
   const OTHER_COLOR = '#4a5d72';
+  // Threshold line: green normally; yellow in color blind mode, where green and the orange lines can look alike
+  const THR_COLOR = window.SnowA11y && window.SnowA11y.colorBlind ? '#f0e442' : '#69db7c';
   const DATA_START = '1950-01-01';
 
   const state = {
@@ -395,7 +397,7 @@
           { label: 'Warmest winter', data: hi, borderColor: '#ff922b', borderDash: [5, 4], pointRadius: 2, fill: false, borderWidth: 1.5 },
           { label: `Average ${MEASURE[state.measure]}`, data: mean, borderColor: '#e6edf7', backgroundColor: 'rgba(116,192,252,0.12)', borderWidth: 3, pointRadius: 4, fill: '+1', tension: 0.2 },
           { label: 'Coldest winter', data: lo, borderColor: '#74c0fc', borderDash: [5, 4], pointRadius: 2, fill: false, borderWidth: 1.5 },
-          { label: `Threshold ${state.thr} °F`, data: MN.map(() => state.thr), borderColor: '#69db7c', borderWidth: 2, pointRadius: 0 },
+          { label: `Threshold ${state.thr} °F`, data: MN.map(() => state.thr), borderColor: THR_COLOR, borderWidth: 2, pointRadius: 0 },
         ],
       },
       options: baseOpts('°F'),
@@ -448,7 +450,7 @@
         datasets: [
           { label: `${label} ${MEASURE[state.measure]}`, data: ys, borderColor: '#74c0fc', backgroundColor: '#74c0fc', pointRadius: 3, borderWidth: 1.5 },
           rg ? { label: 'Trend', data: W.map((y) => rg.at(y)), borderColor: '#ff922b', borderWidth: 2.5, pointRadius: 0 } : null,
-          { label: `Threshold ${state.thr} °F`, data: W.map(() => state.thr), borderColor: '#69db7c', borderWidth: 2, pointRadius: 0 },
+          { label: `Threshold ${state.thr} °F`, data: W.map(() => state.thr), borderColor: THR_COLOR, borderWidth: 2, pointRadius: 0 },
         ].filter(Boolean),
       },
       options: baseOpts('°F'),
@@ -602,7 +604,7 @@
         datasets: [
           { label: `${yl(y)} daily average`, data: cur, borderColor: '#74c0fc', backgroundColor: '#74c0fc', borderWidth: 2, pointRadius: labels.length > 60 ? 0 : 2, tension: 0.15 },
           { label: `${W.length}-winter average`, data: norm, borderColor: '#e6edf7', backgroundColor: '#e6edf7', borderDash: [5, 4], borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-          { label: `Threshold ${state.thr} °F`, data: labels.map(() => state.thr), borderColor: '#69db7c', backgroundColor: '#69db7c', borderWidth: 2, pointRadius: 0 },
+          { label: `Threshold ${state.thr} °F`, data: labels.map(() => state.thr), borderColor: THR_COLOR, backgroundColor: THR_COLOR, borderWidth: 2, pointRadius: 0 },
         ],
       },
       options: baseOpts('°F', { x: { ticks: { color: TXT, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } } }),
