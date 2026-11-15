@@ -4,6 +4,25 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.6 — November 15, 2026
+
+**Forecast page: observed conditions in the Now card** ([PR #6](https://github.com/jjmung/snowmakingwx/pull/6))
+
+Changed
+- The **Now** card shows real observed conditions from the nearest reporting National Weather Service station instead of the forecast for the current hour. Wet bulb, temperature, humidity and wind all come from the station report, and the label gives the time of the report.
+
+Added
+- The station name, ID and distance under the reading, as a **link to that station's observations on weather.gov**. The forecast wet bulb for the hour sits beside it for comparison.
+- Observations reload every 5 minutes and with the Refresh button.
+- If the nearest station has no report from the last 90 minutes, the next three closest are tried. If none are reporting, the card shows the forecast and says so.
+
+Notes
+- The station is usually an airport near the hill, not on it. For Granite Peak it is Wausau Downtown Airport, about 3 miles east at base elevation, so the summit can differ.
+- Airport 5-minute reports round temperature to whole degrees Celsius, so the observed wet bulb can be off by about 1°F.
+- The charts, outlook strip, windows and hourly table still use the forecast.
+
+---
+
 ## 1.5 — November 13, 2026
 
 **History page: daily temperature by winter** ([PR #5](https://github.com/jjmung/snowmakingwx/pull/5))

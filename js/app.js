@@ -12,6 +12,7 @@
     resorts: [],
     resort: null,
     data: null,
+    obs: null, // latest station observation for the Now card
     view: [],
     rangeH: store.get('snowwx.range', 72),
     sel: 0,
@@ -67,6 +68,7 @@
     const key = `snowwx.cache.${r.lat.toFixed(4)},${r.lon.toFixed(4)}`;
     const cached = store.get(key, null);
     setStatus('');
+    loadObs();
     if (!force && cached && Date.now() - cached.meta.fetched < CFG.cacheMinutes * 60e3) {
       return show(cached);
     }
@@ -88,6 +90,22 @@
     } finally {
       $('#refreshBtn').disabled = false;
     }
+  }
+
+  // Real conditions for the Now card. The forecast stays on screen if this fails.
+  async function loadObs() {
+    const r = state.resort;
+    try {
+      const obs = await window.SnowWeather.fetchCurrent(r.lat, r.lon);
+      if (state.resort !== r) return; // switched resorts while loading
+      state.obs = obs;
+    } catch (e) {
+      console.error(e);
+      if (state.resort !== r) return;
+      // Keep the last reading until it is too old to call "now"
+      if (state.obs && Date.now() - state.obs.t > 90 * 60e3) state.obs = null;
+    }
+    if (state.data) renderCards();
   }
 
   function show(data) {
@@ -158,6 +176,33 @@
     return `<span class="chip" style="--c:${zone.color}">${zone.label}</span>`;
   }
 
+  // "Now" uses the latest station observation; the forecast hour is the fallback.
+  function nowCard(fc) {
+    const o = state.obs;
+    if (!o) {
+      return `
+      <div class="card">
+        <div class="card-label">Now · forecast for ${fc.fullLabel}</div>
+        <div class="card-value">${deg(fc.wbF)}F <small>wet bulb</small></div>
+        <div class="card-sub">${chip(fc.zone)} ${deg(fc.tempF)}F · ${num(fc.rh)}% RH · ${fc.dirText} ${num(fc.windMph)} mph</div>
+        <div class="card-sub">No current station report; showing the forecast</div>
+      </div>`;
+    }
+    const time = new Intl.DateTimeFormat('en-US', { timeZone: state.data.meta.timeZone, hour: 'numeric', minute: '2-digit' }).format(o.t);
+    const wind = o.windMph == null ? 'wind —'
+      : o.windMph < 1 ? 'Calm'
+      : `${o.windDir == null ? '' : dirText(o.windDir) + ' '}${num(o.windMph)} mph${o.gustMph ? ` G${num(o.gustMph)}` : ''}`;
+    const st = o.station;
+    const name = String(st.name).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    return `
+      <div class="card">
+        <div class="card-label">Now · observed ${time}</div>
+        <div class="card-value">${deg(o.wbF)}F <small>wet bulb</small></div>
+        <div class="card-sub">${chip(zoneFor(o.wbF))} ${deg(o.tempF)}F · ${num(o.rh)}% RH · ${wind}</div>
+        <div class="card-sub"><a href="https://www.weather.gov/wrh/timeseries?site=${encodeURIComponent(st.id)}" target="_blank" rel="noopener" title="Open this station's observations on weather.gov">${name} (${st.id}), ${st.distMi.toFixed(st.distMi < 10 ? 1 : 0)} mi ${dirText(st.bearing)}</a> · forecast this hour ${deg(fc.wbF)}F</div>
+      </div>`;
+  }
+
   function renderCards() {
     const v = state.view;
     const now = v[0];
@@ -169,11 +214,7 @@
     const label = state.rangeH === 168 ? 'next 7 days' : `next ${state.rangeH} h`;
 
     $('#cards').innerHTML = `
-      <div class="card">
-        <div class="card-label">Now · ${now.fullLabel}</div>
-        <div class="card-value">${deg(now.wbF)}F <small>wet bulb</small></div>
-        <div class="card-sub">${chip(now.zone)} ${deg(now.tempF)}F · ${num(now.rh)}% RH · ${now.dirText} ${num(now.windMph)} mph</div>
-      </div>
+      ${nowCard(now)}
       <div class="card">
         <div class="card-label">Next snowmaking window</div>
         ${next
@@ -341,6 +382,7 @@
 
   function selectResort(id) {
     state.resort = state.resorts.find((r) => r.id === id) || state.resorts[0];
+    state.obs = null;
     const r = state.resort;
     $('#resortSelect').value = r.id;
     $('#deleteResortBtn').hidden = !r.custom;
@@ -542,4 +584,5 @@
     selectResort(store.get('snowwx.resort', CFG.defaultResortId));
   }
   setInterval(() => load(), CFG.cacheMinutes * 60e3);
+  setInterval(() => loadObs(), 5 * 60e3); // stations report every 5-20 minutes
 })();

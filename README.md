@@ -6,7 +6,7 @@ Live site: **https://jjmung.github.io/snowmakingwx/**
 
 SnowmakingWX turns the free National Weather Service forecast into the numbers a snowmaker actually uses: wet bulb by the hour, when the windows open and close, where the wind will carry the plume, and how this winter stacks up against the last 75. It is plain HTML and JavaScript, with no build step, no server and no API key.
 
-Current version: **1.5** (November 13, 2026). See [CHANGELOG.md](CHANGELOG.md) for version notes.
+Current version: **1.6** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) for version notes.
 
 ---
 
@@ -41,7 +41,7 @@ Current version: **1.5** (November 13, 2026). See [CHANGELOG.md](CHANGELOG.md) f
 
 `index.html`. Covers the next 48 hours, 72 hours or 7 days.
 
-- **Summary cards.** Current wet bulb and rating, the next snowmaking window, total workable hours and the coldest wet bulb in the range.
+- **Summary cards.** Current wet bulb and rating as observed at the nearest reporting NWS station (linked to its weather.gov observation page, with the forecast alongside), the next snowmaking window, total workable hours and the coldest wet bulb in the range.
 - **Hourly outlook strip.** One colored cell per hour, rated by wet bulb. Hatched cells mean the wind is over the limit.
 
   | Rating | Wet bulb |

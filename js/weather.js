@@ -1,4 +1,4 @@
-// NWS (api.weather.gov) gridpoint forecast loader and psychrometric helpers.
+// NWS (api.weather.gov) gridpoint forecast loader, latest station observations and psychrometric helpers.
 (function () {
   const BASE = 'https://api.weather.gov';
   const HOUR = 3600e3;
@@ -145,5 +145,54 @@
     };
   }
 
-  window.SnowWeather = { fetchForecast, wetBulbC, pressureKPa };
+  // Latest real observation from the nearest NWS station that is reporting.
+  // Returns null when no nearby station has a usable report from the last 90 minutes.
+  async function fetchCurrent(lat, lon) {
+    const point = await getJSON(`${BASE}/points/${lat.toFixed(4)},${lon.toFixed(4)}`);
+    const list = await getJSON(`${point.properties.observationStations}?limit=4`);
+    const rad = Math.PI / 180;
+    for (const st of list.features || []) {
+      const sp = st.properties;
+      let obs;
+      try {
+        obs = await getJSON(`${BASE}/stations/${sp.stationIdentifier}/observations?limit=6`, 1);
+      } catch {
+        continue; // station offline; try the next nearest
+      }
+      for (const f of obs.features || []) {
+        const o = f.properties;
+        const t = Date.parse(o.timestamp);
+        if (!(Date.now() - t < 90 * 60e3)) break; // newest first: the rest are older still
+        const tC = canonical(o.temperature?.unitCode, o.temperature?.value);
+        const dObs = canonical(o.dewpoint?.unitCode, o.dewpoint?.value);
+        let rh = o.relativeHumidity?.value;
+        if (rh == null && tC != null && dObs != null) rh = 100 * satVP(dObs) / satVP(tC);
+        if (tC == null || rh == null) continue;
+        rh = Math.min(100, rh);
+        const elevM = sp.elevation?.value ?? 0; // metres
+        const ws = canonical(o.windSpeed?.unitCode, o.windSpeed?.value);
+        const wg = canonical(o.windGust?.unitCode, o.windGust?.value);
+        // Distance and compass bearing from the resort to the station
+        const [sLon, sLat] = st.geometry.coordinates;
+        const dLat = (sLat - lat) * rad, dLon = (sLon - lon) * rad;
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat * rad) * Math.cos(sLat * rad) * Math.sin(dLon / 2) ** 2;
+        const y = Math.sin(dLon) * Math.cos(sLat * rad);
+        const x = Math.cos(lat * rad) * Math.sin(sLat * rad) - Math.sin(lat * rad) * Math.cos(sLat * rad) * Math.cos(dLon);
+        return {
+          t,
+          tempF: cToF(tC),
+          dewF: cToF(dObs ?? dewPointC(tC, rh)),
+          rh,
+          wbF: cToF(wetBulbC(tC, rh, pressureKPa(elevM))),
+          windMph: ws == null ? null : kmhToMph(ws),
+          gustMph: wg == null ? null : kmhToMph(wg),
+          windDir: o.windDirection?.value ?? null,
+          station: { id: sp.stationIdentifier, name: sp.name, elevM, distMi: 3958.8 * 2 * Math.asin(Math.sqrt(a)), bearing: (Math.atan2(y, x) / rad + 360) % 360 },
+        };
+      }
+    }
+    return null;
+  }
+
+  window.SnowWeather = { fetchForecast, fetchCurrent, wetBulbC, pressureKPa };
 })();
