@@ -6,7 +6,7 @@ Live site: **https://jjmung.github.io/snowmakingwx/**
 
 SnowmakingWX turns the free National Weather Service forecast into the numbers a snowmaker actually uses: wet bulb by the hour, when the windows open and close, where the wind will carry the plume, and how this winter stacks up against the last 75. It is plain HTML and JavaScript, with no build step, no server and no API key.
 
-Current version: **1.7** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) for version notes.
+Current version: **1.8** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) for version notes.
 
 ---
 
@@ -112,11 +112,13 @@ Keyboard: the left and right arrow keys step through the hours.
 | Winters shown | History | 50 |
 | Production window | History | Nov 1 – Feb 1 |
 | Daily temperature date range | History | Nov 1 – Feb 1 |
+| Color blind mode (◐ Color blind button in the top bar) | Both | Off |
 
 **In `js/config.js`** (applies to everyone):
 
 - built-in resorts and the default resort
 - wet bulb rating zones and their colors
+- the zone colors used in color blind mode
 - wind caution and limit speeds
 - gun types (throw distance and hang time)
 - forecast refresh interval
@@ -173,6 +175,7 @@ To roll back a release, revert its pull request on GitHub.
     css/styles.css          Shared styles
     css/history.css         History page styles
     js/config.js            Resorts, rating zones, wind limits, gun types
+    js/a11y.js              Color blind mode toggle
     js/weather.js           NWS forecast loader and wet bulb math
     js/charts.js            Forecast charts (Chart.js)
     js/map.js               Plume drift map (Leaflet)

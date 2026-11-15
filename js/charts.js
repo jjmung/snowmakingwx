@@ -170,6 +170,7 @@
     Chart.defaults.color = muted;
     Chart.defaults.font.family = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
 
+    const cb = !!(window.SnowA11y && window.SnowA11y.colorBlind); // dotted humidity line as a second cue
     let view = [];
     let tickStep = 6;
 
@@ -206,7 +207,7 @@
           { label: 'Wet bulb °F', data: [], borderColor: css('--wb'), backgroundColor: css('--wb'), borderWidth: 3, pointRadius: 0, tension: 0.3, yAxisID: 'y' },
           { label: 'Temp °F', data: [], borderColor: css('--temp'), backgroundColor: css('--temp'), borderWidth: 1.5, pointRadius: 0, tension: 0.3, yAxisID: 'y' },
           { label: 'Dew point °F', data: [], borderColor: css('--dew'), backgroundColor: css('--dew'), borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0, tension: 0.3, yAxisID: 'y' },
-          { label: 'Humidity %', data: [], borderColor: css('--rh'), backgroundColor: hexA(css('--rh'), 0.08), fill: true, borderWidth: 1, pointRadius: 0, tension: 0.3, yAxisID: 'rh' },
+          { label: 'Humidity %', data: [], borderColor: css('--rh'), backgroundColor: hexA(css('--rh'), 0.08), fill: true, borderWidth: 1, borderDash: cb ? [2, 3] : [], pointRadius: 0, tension: 0.3, yAxisID: 'rh' },
         ],
       },
       options: {

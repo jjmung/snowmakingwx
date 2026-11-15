@@ -4,6 +4,29 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.8 — November 15, 2026
+
+**Color blind mode** ([PR #8](https://github.com/jjmung/snowmakingwx/pull/8))
+
+Added
+- A **◐ Color blind** button in the top bar of the Forecast and History pages. It switches the page to colors that stay readable with red-green and blue-yellow color blindness. The page reloads in the new colors, the button stays highlighted, and the choice is remembered on the device.
+- **Wet bulb zones** (strip, chips, legend, chart bands, plume) become a light-to-dark blue ramp for Excellent, Good and Fair, with amber for Marginal, so zones differ by brightness as well as color.
+- **Wet bulb chart**: temperature in deep orange, dew point in dashed blue, humidity in dotted yellow, so the lines differ by pattern as well as color.
+- **Wind chart**: blue, yellow and dark orange bars for ok, caution and limit, with a white gust line.
+- **Wind-limited hours** on the strip use black-and-white stripes instead of red.
+- **History page**: the threshold line turns yellow.
+
+Changed
+- Top bar buttons wrap onto a second line on narrow screens.
+
+Notes
+- One mode covers the common types of color blindness; there is no separate setting per type.
+- The colors were checked with a color-blindness simulation, not by color blind users.
+- Gun markers, the History heat map and the El Niño / La Niña colors are unchanged; they already differ by shape or by a blue-versus-orange split.
+- The zone colors for this mode can be edited in `js/config.js`.
+
+---
+
 ## 1.7 — November 15, 2026
 
 **Forecast page: 10- and 16-day outlook** ([PR #7](https://github.com/jjmung/snowmakingwx/pull/7))

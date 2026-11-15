@@ -19,6 +19,12 @@ window.SNOWWX_CONFIG = {
     { key: 'none', label: 'Too warm', max: Infinity, color: '#495057' },
   ],
 
+  // Zone colors used when "Color blind" is switched on in the top bar: a light-to-dark blue
+  // ramp for the workable zones and amber for marginal, so zones differ by brightness as well as hue.
+  colorBlind: {
+    zones: { excellent: '#e7f5ff', good: '#74c0fc', fair: '#228be6', marginal: '#f08c00', none: '#495057' },
+  },
+
   // Wind limits in mph. Above `limitMph` sustained (or `gustLimitMph` gusts) the hour is flagged as wind-limited.
   wind: { cautionMph: 15, limitMph: 25, gustLimitMph: 35 },
 
