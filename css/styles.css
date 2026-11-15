@@ -140,6 +140,10 @@ main { max-width: 1400px; margin: 0 auto; padding: 16px; display: grid; grid-tem
 .strip-day { flex: 1 1 0; min-width: min-content; }
 .strip-day-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
 .strip-cells { display: flex; gap: 1px; }
+.strip-day.ext .strip-day-label { font-style: italic; }
+.strip-day.ext-first { border-left: 2px dashed var(--muted); padding-left: 4px; }
+.ext-note { margin: 8px 0 0; }
+.tag-ext { font-size: 11px; color: var(--muted); border: 1px dashed var(--border); border-radius: 6px; padding: 0 5px; margin-left: 4px; font-weight: 400; }
 .cell {
   width: 10px;
   min-width: 10px;

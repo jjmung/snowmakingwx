@@ -45,10 +45,13 @@
           <button data-h="48">48h</button>
           <button data-h="72">72h</button>
           <button data-h="168">7d</button>
+          <button data-h="240">10d</button>
+          <button data-h="384">16d</button>
         </div>
       </div>
       <div class="strip-wrap"><div id="strip" class="strip"></div></div>
       <div class="legend" id="legend"></div>
+      <p class="hint ext-note" id="extNote" hidden></p>
     </section>
 
     <section class="panel">
@@ -100,7 +103,7 @@
 
     <footer>
       <p id="updated"></p>
-      <p>Forecast data: <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener">National Weather Service API</a> gridpoint forecast. Wet bulb is computed from forecast temperature and humidity at the grid's elevation. Plume reach is a rough estimate (throw distance + wind speed × hang time) — thresholds and gun parameters are editable in <code>js/config.js</code>.</p>
+      <p>Forecast data: <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener">National Weather Service API</a> gridpoint forecast. Hours past the NWS range (about day 7 onward) and the 10- and 16-day views use <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> global model data. Wet bulb is computed from forecast temperature and humidity at the grid's elevation. Plume reach is a rough estimate (throw distance + wind speed × hang time) — thresholds and gun parameters are editable in <code>js/config.js</code>.</p>
     </footer>
   </main>
 

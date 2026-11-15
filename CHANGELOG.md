@@ -4,6 +4,23 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.7 — November 15, 2026
+
+**Forecast page: 10- and 16-day outlook** ([PR #7](https://github.com/jjmung/snowmakingwx/pull/7))
+
+Added
+- **10d and 16d buttons** on the hourly outlook, next to 48h, 72h and 7d. The longer views feed the strip, both charts, the summary cards, the windows list, the hourly table and the plume map.
+- Hours past the end of the National Weather Service forecast (about day 7) come from **Open-Meteo** global models, adjusted to the same elevation as the NWS grid. The NWS hours are unchanged.
+- Markers where the extended range begins: a dashed line labelled "Extended range" on the charts, a dashed divider and italic day labels on the strip, an "extended range" tag on windows that run into those days, and a note under the strip.
+
+Notes
+- Hourly wet bulb two weeks out is a rough guide. Treat the extended days as a trend, not a schedule.
+- The two sources do not agree exactly, so the lines can step where they meet.
+- On the 10d and 16d views, "Snowmaking hours" and "Coldest wet bulb" include the extended days.
+- If Open-Meteo cannot be reached, the page still shows the NWS forecast and says the extended outlook is unavailable.
+
+---
+
 ## 1.6 — November 15, 2026
 
 **Forecast page: observed conditions in the Now card** ([PR #6](https://github.com/jjmung/snowmakingwx/pull/6))
