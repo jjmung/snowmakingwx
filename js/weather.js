@@ -80,6 +80,43 @@
     return (243.04 * g) / (17.625 - g);
   }
 
+  // Extended range (to 16 days) from Open-Meteo's global models, used for hours past the end
+  // of the NWS forecast. Temperatures are adjusted to the same elevation as the NWS grid.
+  async function fetchExtended(lat, lon, elevM, afterMs) {
+    const q = new URLSearchParams({
+      latitude: lat.toFixed(4), longitude: lon.toFixed(4), elevation: Math.round(elevM),
+      hourly: 'temperature_2m,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation_probability,cloud_cover,snowfall',
+      forecast_days: 16, timeformat: 'unixtime', timezone: 'GMT',
+    });
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?${q}`);
+    if (!res.ok) throw new Error(`Open-Meteo returned ${res.status}`);
+    const h = (await res.json()).hourly;
+    const pKPa = pressureKPa(elevM);
+    const out = [];
+    h.time.forEach((sec, i) => {
+      const t = sec * 1000;
+      const tC = h.temperature_2m[i], rh = h.relative_humidity_2m[i];
+      if (t <= afterMs || tC == null || rh == null) return;
+      const windMph = h.wind_speed_10m[i] == null ? null : kmhToMph(h.wind_speed_10m[i]);
+      const gust = h.wind_gusts_10m[i];
+      out.push({
+        t,
+        tempF: cToF(tC),
+        dewF: cToF(h.dew_point_2m[i] ?? dewPointC(tC, rh)),
+        rh,
+        wbF: cToF(wetBulbC(tC, rh, pKPa)),
+        windMph,
+        gustMph: gust == null ? windMph : Math.max(kmhToMph(gust), windMph ?? 0),
+        windDir: h.wind_direction_10m[i],
+        pop: h.precipitation_probability[i],
+        sky: h.cloud_cover[i],
+        snowIn: h.snowfall[i] == null ? null : h.snowfall[i] / 2.54, // cm -> in
+        ext: true,
+      });
+    });
+    return out;
+  }
+
   async function fetchForecast(lat, lon) {
     const point = await getJSON(`${BASE}/points/${lat.toFixed(4)},${lon.toFixed(4)}`);
     const pp = point.properties;
@@ -129,11 +166,24 @@
       });
     }
 
+    // Hours past the NWS range. The NWS forecast still stands on its own if this fails.
+    let extended = false;
+    if (hours.length) {
+      try {
+        const more = await fetchExtended(lat, lon, elevM, hours[hours.length - 1].t);
+        hours.push(...more);
+        extended = more.length > 0;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
     const rl = pp.relativeLocation?.properties;
     return {
       hours,
       meta: {
         elevM,
+        extended,
         timeZone: pp.timeZone,
         place: rl ? `${rl.city}, ${rl.state}` : '',
         office: pp.gridId,

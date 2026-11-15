@@ -29,6 +29,30 @@
     },
   };
 
+  // Dashed marker where the NWS forecast ends and the extended-range model begins
+  const extendedPlugin = {
+    id: 'extended',
+    afterDatasetsDraw(chart) {
+      const i = chart.$extStart;
+      if (i == null || i < 1) return;
+      const x = chart.scales.x.getPixelForValue(i - 0.5);
+      const { top, bottom } = chart.chartArea;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.strokeStyle = css('--muted');
+      ctx.fillStyle = css('--muted');
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 4]);
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+      ctx.stroke();
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.fillText('Extended range →', x + 6, top + 12);
+      ctx.restore();
+    },
+  };
+
   // Shaded wet bulb rating bands behind the temperature chart
   function zoneBandsPlugin(zones) {
     return {
@@ -201,7 +225,7 @@
           tooltip: { ...tooltip, callbacks: { ...tooltip.callbacks, label: (c) => `${c.dataset.label}: ${Math.round(c.parsed.y)}` } },
         },
       },
-      plugins: [zoneBandsPlugin(cfg.wetBulbZones), cursorPlugin],
+      plugins: [zoneBandsPlugin(cfg.wetBulbZones), extendedPlugin, cursorPlugin],
     });
 
     const windChart = new Chart(windCanvas, {
@@ -239,12 +263,14 @@
           },
         },
       },
-      plugins: [windLimitsPlugin(cfg.wind), windArrowsPlugin, cursorPlugin],
+      plugins: [windLimitsPlugin(cfg.wind), windArrowsPlugin, extendedPlugin, cursorPlugin],
     });
 
     function update(newView) {
       view = newView;
-      tickStep = view.length <= 48 ? 3 : 6;
+      tickStep = view.length <= 48 ? 3 : view.length <= 168 ? 6 : 12;
+      const ext = view.findIndex((h) => h.ext);
+      wbChart.$extStart = windChart.$extStart = ext < 0 ? null : ext;
       const labels = view.map((h) => h.fullLabel);
       const r = (v) => (v == null ? null : Math.round(v * 10) / 10);
 
@@ -263,7 +289,7 @@
       windChart.data.datasets[1].data = view.map((h) => r(h.windMph));
       windChart.data.datasets[1].backgroundColor = view.map((h) => colors[h.windFlag]);
       windChart.$view = view;
-      windChart.$arrowStep = view.length <= 48 ? 2 : 3;
+      windChart.$arrowStep = view.length <= 48 ? 2 : view.length <= 168 ? 3 : 4;
 
       wbChart.update();
       windChart.update();

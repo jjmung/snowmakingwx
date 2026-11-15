@@ -6,7 +6,7 @@ Live site: **https://jjmung.github.io/snowmakingwx/**
 
 SnowmakingWX turns the free National Weather Service forecast into the numbers a snowmaker actually uses: wet bulb by the hour, when the windows open and close, where the wind will carry the plume, and how this winter stacks up against the last 75. It is plain HTML and JavaScript, with no build step, no server and no API key.
 
-Current version: **1.6** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) for version notes.
+Current version: **1.7** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) for version notes.
 
 ---
 
@@ -39,7 +39,7 @@ Current version: **1.6** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) f
 
 ## Forecast page
 
-`index.html`. Covers the next 48 hours, 72 hours or 7 days.
+`index.html`. Covers the next 48 hours, 72 hours, 7 days, 10 days or 16 days. Hours past the end of the NWS forecast (about day 7) come from Open-Meteo global models and are marked as extended range.
 
 - **Summary cards.** Current wet bulb and rating as observed at the nearest reporting NWS station (linked to its weather.gov observation page, with the forecast alongside), the next snowmaking window, total workable hours and the coldest wet bulb in the range.
 - **Hourly outlook strip.** One colored cell per hour, rated by wet bulb. Hatched cells mean the wind is over the limit.
@@ -191,6 +191,7 @@ Libraries are loaded from a CDN: Chart.js 4.4.1 and Leaflet 1.9.4.
 ## Data sources and limits
 
 - **Forecast:** [National Weather Service API](https://www.weather.gov/documentation/services-web-api) gridpoint forecast. U.S. locations only, and the service has occasional outages.
+- **Extended outlook (past day 7):** [Open-Meteo](https://open-meteo.com/) forecast API, global weather models, adjusted to the NWS grid elevation. No API key.
 - **History:** [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) (ERA5 / ERA5-Land reanalysis, 1950 onward). This is a gridded model of the location, not a weather station record, so it can run a few degrees off a nearby station. Modeled snowfall is only a rough guide.
 - **ENSO:** NOAA Climate Prediction Center Oceanic Niño Index.
 - **Place search:** OpenStreetMap Nominatim.

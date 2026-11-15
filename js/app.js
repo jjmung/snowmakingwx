@@ -132,6 +132,7 @@
     sizeCharts();
     charts.update(state.view);
     renderCards();
+    renderExtNote();
     renderStrip();
     renderWindows();
     renderTable();
@@ -141,7 +142,7 @@
   }
 
   function sizeCharts() {
-    const perHour = 9;
+    const perHour = state.view.length > 168 ? 6 : 9;
     document.querySelectorAll('.chart-box').forEach((b) => {
       b.style.minWidth = `${Math.max(state.view.length * perHour, 0)}px`;
     });
@@ -211,7 +212,7 @@
     const hoursOk = v.filter(usable).length;
     const hoursGood = v.filter((h) => usable(h) && h.wbF <= CFG.wetBulbZones[1].max).length;
     const coldest = v.reduce((a, h) => (h.wbF < a.wbF ? h : a), v[0]);
-    const label = state.rangeH === 168 ? 'next 7 days' : `next ${state.rangeH} h`;
+    const label = state.rangeH >= 168 ? `next ${Math.round(Math.min(state.rangeH, Math.max(v.length, 168)) / 24)} days` : `next ${state.rangeH} h`;
 
     $('#cards').innerHTML = `
       ${nowCard(now)}
@@ -234,23 +235,38 @@
       </div>`;
   }
 
+  // Says where the NWS forecast ends and the extended-range model takes over.
+  function renderExtNote() {
+    const el = $('#extNote');
+    const first = state.view.find((h) => h.ext);
+    if (first) {
+      el.textContent = `From ${first.fullLabel} on (dashed line), hours come from extended-range global models instead of the NWS forecast. Treat them as a trend, not a schedule.`;
+    } else if (state.rangeH > 168) {
+      el.textContent = 'The extended outlook past the NWS forecast is not available right now. Try Refresh.';
+    }
+    el.hidden = !first && state.rangeH <= 168;
+  }
+
   function renderStrip() {
     const strip = $('#strip');
     strip.innerHTML = '';
     let dayEl = null;
     let lastDay = null;
+    let lastExt = false;
     state.view.forEach((h, i) => {
-      if (h.dayShort !== lastDay) {
+      const extStart = !!h.ext && !lastExt;
+      lastExt = !!h.ext;
+      if (h.dayShort !== lastDay || extStart) {
         lastDay = h.dayShort;
         dayEl = document.createElement('div');
-        dayEl.className = 'strip-day';
+        dayEl.className = `strip-day${h.ext ? ' ext' : ''}${extStart ? ' ext-first' : ''}`;
         dayEl.innerHTML = `<div class="strip-day-label">${h.dayShort}</div><div class="strip-cells"></div>`;
         strip.appendChild(dayEl);
       }
       const c = document.createElement('button');
       c.className = `cell wind-${h.windFlag}`;
       c.style.setProperty('--c', h.zone.color);
-      c.title = `${h.fullLabel}: WB ${deg(h.wbF)}F (${h.zone.label}), wind ${h.dirText} ${num(h.windMph)} G${num(h.gustMph)} mph`;
+      c.title = `${h.fullLabel}: WB ${deg(h.wbF)}F (${h.zone.label}), wind ${h.dirText} ${num(h.windMph)} G${num(h.gustMph)} mph${h.ext ? ' · extended range' : ''}`;
       c.dataset.i = i;
       c.onclick = () => select(i);
       dayEl.querySelector('.strip-cells').appendChild(c);
@@ -270,7 +286,7 @@
         const a = state.view[w.start];
         const b = state.view[w.end];
         return `<button class="window" data-i="${w.start}" style="--c:${w.best.color}">
-          <div class="window-time">${a.fullLabel} → ${b.fullLabel}${w.end === state.view.length - 1 ? '+' : ''}</div>
+          <div class="window-time">${a.fullLabel} → ${b.fullLabel}${w.end === state.view.length - 1 ? '+' : ''}${b.ext ? '<span class="tag-ext">extended range</span>' : ''}</div>
           <div class="window-meta"><b>${w.hours.length} h</b> · min WB ${deg(w.minWb)}F ${chip(w.best)} · avg wind ${Math.round(w.avgWind)} mph from ${dirText(w.avgDir)}</div>
         </button>`;
       })
