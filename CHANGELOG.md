@@ -21,7 +21,7 @@ Changed
 
 Notes
 - One mode covers the common types of color blindness; there is no separate setting per type.
-- The colors were checked with a color-blindness simulation, not by color blind users.
+- The colors were checked with a color-blindness simulation and tested by several color blind users, who could read all the information. More testers are welcome.
 - Gun markers, the History heat map and the El Niño / La Niña colors are unchanged; they already differ by shape or by a blue-versus-orange split.
 - The zone colors for this mode can be edited in `js/config.js`.
 
