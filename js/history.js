@@ -94,7 +94,8 @@
 
   // ---------- location ----------
   function loadResorts() {
-    state.resorts = [...CFG.resorts, ...store.get('snowwx.customResorts', [])];
+    const hidden = store.get('snowwx.hiddenResorts', []); // built-ins removed on the Forecast page
+    state.resorts = [...CFG.resorts.filter((r) => !hidden.includes(r.id)), ...store.get('snowwx.customResorts', [])];
     const sel = $('#resortSelect');
     sel.innerHTML = '';
     sel.add(new Option('Saved locations…', ''));
@@ -766,6 +767,7 @@
 
   // ---------- start ----------
   loadResorts();
+  window.SnowResortPicker.enhance($('#resortSelect'), Object.fromEntries(CFG.resorts.filter((r) => r.logo).map((r) => [r.id, r.logo])));
   syncControls();
   const qs = new URLSearchParams(location.search);
   const qLat = parseFloat(qs.get('lat')), qLon = parseFloat(qs.get('lon'));

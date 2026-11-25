@@ -524,8 +524,23 @@
 
   // ---------- resorts & guns ----------
 
+  // Built-in resorts can be removed from the list. They are hidden, not lost: saving a place
+  // within RESTORE_KM of one brings it back with its name, logo and placed guns.
+  const RESTORE_KM = 2;
+  const hiddenBuiltIns = () => store.get('snowwx.hiddenResorts', []);
+  const distKm = (a, b) => 111.2 * Math.hypot(a.lat - b.lat, (a.lon - b.lon) * Math.cos((a.lat * Math.PI) / 180));
+  const builtInNear = (p) => CFG.resorts.find((b) => distKm(b, p) <= RESTORE_KM);
+  function restoreBuiltIn(b, fromId) {
+    store.set('snowwx.hiddenResorts', hiddenBuiltIns().filter((id) => id !== b.id));
+    // Keep the resort's own guns; if it had none, carry over any placed on the searched spot
+    if (fromId && !store.get(`snowwx.guns.${b.id}`, []).length) store.set(`snowwx.guns.${b.id}`, store.get(`snowwx.guns.${fromId}`, []));
+    loadResorts();
+    selectResort(b.id);
+  }
+
   function loadResorts() {
-    state.resorts = [...CFG.resorts, ...store.get('snowwx.customResorts', [])];
+    const hidden = hiddenBuiltIns();
+    state.resorts = [...CFG.resorts.filter((r) => !hidden.includes(r.id)), ...store.get('snowwx.customResorts', [])];
     const sel = $('#resortSelect');
     sel.innerHTML = '';
     for (const r of state.resorts) sel.add(new Option(r.region ? `${r.name} — ${r.region}` : r.name, r.id));
@@ -536,7 +551,8 @@
     state.obs = null;
     const r = state.resort;
     $('#resortSelect').value = r.id;
-    $('#deleteResortBtn').hidden = !r.custom;
+    // Any saved location can be removed, built-in or your own, as long as one stays in the list
+    $('#deleteResortBtn').hidden = r.temp || state.resorts.filter((x) => !x.temp).length <= 1;
     $('#saveResortBtn').hidden = !r.temp;
     if (!r.temp) store.set('snowwx.resort', r.id);
 
@@ -642,6 +658,8 @@
   $('#saveResortBtn').onclick = () => {
     const r = state.resort;
     if (!r.temp) return;
+    const b = builtInNear(r);
+    if (b) return restoreBuiltIn(b, r.id); // a built-in resort comes back as itself, logo and all
     const saved = { ...r, id: `custom-${Date.now()}`, custom: true };
     delete saved.temp;
     store.set('snowwx.customResorts', [...store.get('snowwx.customResorts', []), saved]);
@@ -682,9 +700,14 @@
   };
 
   $('#setLocBtn').onclick = () => {
+    const c = snowMap.center();
+    const b = builtInNear(c);
+    if (b && hiddenBuiltIns().includes(b.id)) {
+      if (confirm(`Add ${b.name} back to your list?`)) restoreBuiltIn(b, null);
+      return;
+    }
     const name = prompt('Name for this location (forecast will use the current map center):');
     if (!name) return;
-    const c = snowMap.center();
     const r = { id: `custom-${Date.now()}`, name, region: '', lat: +c.lat.toFixed(4), lon: +c.lon.toFixed(4), zoom: c.zoom, custom: true };
     store.set('snowwx.customResorts', [...store.get('snowwx.customResorts', []), r]);
     loadResorts();
@@ -692,11 +715,20 @@
   };
 
   $('#deleteResortBtn').onclick = () => {
-    if (!state.resort.custom || !confirm(`Remove “${state.resort.name}” and its guns?`)) return;
-    store.set('snowwx.customResorts', store.get('snowwx.customResorts', []).filter((r) => r.id !== state.resort.id));
-    try { localStorage.removeItem(`snowwx.guns.${state.resort.id}`); } catch { /* ignore */ }
+    const r = state.resort;
+    if (r.temp) return;
+    const builtIn = CFG.resorts.some((b) => b.id === r.id);
+    if (builtIn) {
+      // Hidden, not erased: its guns are kept for when it is saved back
+      if (!confirm(`Remove “${r.name}” from your list?\n\nTo add it back later, search for it and press ☆ Save.`)) return;
+      store.set('snowwx.hiddenResorts', [...new Set([...hiddenBuiltIns(), r.id])]);
+    } else {
+      if (!confirm(`Remove “${r.name}” and its guns?`)) return;
+      store.set('snowwx.customResorts', store.get('snowwx.customResorts', []).filter((x) => x.id !== r.id));
+      try { localStorage.removeItem(`snowwx.guns.${r.id}`); } catch { /* ignore */ }
+    }
     loadResorts();
-    selectResort(CFG.defaultResortId);
+    selectResort(CFG.defaultResortId); // falls back to the first location left if the default was removed
   };
 
   $('#resortSelect').onchange = (e) => selectResort(e.target.value);
@@ -776,6 +808,7 @@
 
   renderLegend();
   loadResorts();
+  window.SnowResortPicker.enhance($('#resortSelect'), Object.fromEntries(CFG.resorts.filter((r) => r.logo).map((r) => [r.id, r.logo])));
 
   // Ad-hoc location from the URL, e.g. ?lat=44.926&lon=-89.684&name=Granite%20Peak
   const qs = new URLSearchParams(location.search);
