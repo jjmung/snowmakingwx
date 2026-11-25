@@ -4,6 +4,15 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.9.1 — November 25, 2026
+
+**Fix: new features missing after an update**
+
+Fixed
+- After 1.9 went live, a browser could show the new page with the old cached scripts, so the Snowmaking windows range picker, calendar and view dropdown did nothing. Both pages now load their scripts and styles with a version tag, so a new release always loads matching files.
+
+---
+
 ## 1.9 — November 25, 2026
 
 **Forecast page: layout, windows calendar, chart readout and day / night** ([PR #10](https://github.com/jjmung/snowmakingwx/pull/10))
