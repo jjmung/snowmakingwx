@@ -6,7 +6,7 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ## 1.9.2 — November 25, 2026
 
-**Snowmaking windows: selected hour shown, no jump to the map**
+**Snowmaking windows: selected hour shown, no jump to the map** ([PR #12](https://github.com/jjmung/snowmakingwx/pull/12))
 
 Changed
 - Clicking a window card (calendar or list) now selects its first hour and stays put. It no longer scrolls to the bottom of the page or opens the plume drift map.
