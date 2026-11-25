@@ -6,7 +6,7 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ## 1.9 — November 25, 2026
 
-**Forecast page: layout, windows calendar, chart readout and day / night**
+**Forecast page: layout, windows calendar, chart readout and day / night** ([PR #10](https://github.com/jjmung/snowmakingwx/pull/10))
 
 Changed
 - **Wet bulb limit** slider moved to the top of the page, above the summary cards. Its **default is now 26 °F** (was 28 °F), so Marginal covers 25–26 °F. If you have moved the slider before, your setting is kept.
