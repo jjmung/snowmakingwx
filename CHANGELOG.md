@@ -15,7 +15,7 @@ Added
 
 Changed
 - **Climate history refreshes fetch only the new days** (plus a 14-day overlap) instead of the whole record since 1950: about 6 data-service calls instead of about 2,000.
-- **History page order**: Settings, Daily temperature by winter, A typical winter month by month, Monthly summary, Every winter every month, How each month has changed, Snowmaking hours, Snowfall in El Niño and La Niña winters. **Nights cold enough to run** is now part of the Snowmaking hours section, below the hourly charts.
+- **History page order**: Settings, Daily temperature by winter, A typical winter month by month, How each month has changed, Monthly summary, Every winter every month, Snowmaking hours, Snowfall in El Niño and La Niña winters. **Nights cold enough to run** is now part of the Snowmaking hours section, below the hourly charts.
 
 Notes
 - Rate limits: one request at a time, paced by size; at most 2,500 calls an hour and 6,000 a day, counting your own History page use; a pause of an hour (6 hours for the daily limit) if the service reports a limit; one tab at a time. A full download is about 3,800 calls per location, so three resorts take about two days of having a page open.
