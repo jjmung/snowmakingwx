@@ -192,7 +192,7 @@ To roll back a release, revert its pull request on GitHub.
 
 Libraries are loaded from a CDN: Chart.js 4.4.1 and Leaflet 1.9.4.
 
-The page links its own scripts and styles with a version tag (`js/app.js?v=1.9.1`). When releasing, change the tag in `index.html` and `history.html` so browsers load the new files instead of cached ones (GitHub Pages lets browsers cache them for 10 minutes).
+The page links its own scripts and styles with a version tag (`js/app.js?v=1.9.2`). When releasing, change the tag in `index.html` and `history.html` so browsers load the new files instead of cached ones (GitHub Pages lets browsers cache them for 10 minutes).
 
 ---
 

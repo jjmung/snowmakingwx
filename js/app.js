@@ -353,23 +353,24 @@
             const a = v[sg.start];
             const b = v[sg.end];
             const time = sg.start === sg.end ? a.hourShort : `${a.hourShort}–${b.hourShort}`;
-            return `<button class="cal-seg" data-i="${sg.start}" style="--c:${sum.best.color}" title="${a.fullLabel} → ${b.fullLabel}">
+            return `<button class="cal-seg sel-range" data-i="${sg.start}" data-end="${sg.end}" style="--c:${sum.best.color}" title="${a.fullLabel} → ${b.fullLabel}">
+              <i class="sel-tick" aria-hidden="true"></i>
               <span class="cal-seg-time">${sg.contFrom ? '← ' : ''}${time}${sg.contTo ? ' →' : ''}</span>
               <span class="cal-seg-meta"><b>${sg.hours.length} h</b> · ${deg(sum.minWb)}F ${chip(sum.best)}</span>
               <span class="cal-seg-meta">${Math.round(sum.avgWind)} mph ${dirText(sum.avgDir)}</span>
             </button>`;
           })
           .join('');
-        return `<div class="cal-day${d.ext ? ' ext' : ''}${usableHours ? '' : ' idle'}">
+        return `<div class="cal-day${d.ext ? ' ext' : ''}${usableHours ? '' : ' idle'}" data-day="${d.key}">
           <div class="cal-date"><span>${d.first.dayShort}</span> <b>${d.first.monthShort} ${d.first.dayNum}</b>${usableHours ? `<span class="cal-total">${usableHours} h</span>` : ''}</div>
-          <div class="cal-bar">${bar}</div>
+          <div class="cal-bar">${bar}<i class="cal-mark" aria-hidden="true"></i></div>
           ${segs || '<div class="cal-none">No window</div>'}
         </div>`;
       })
       .join('');
     el.innerHTML = `<div class="cal-head">${WEEKDAYS.map((w) => `<div>${w}</div>`).join('')}</div><div class="cal-grid">${blanks}${cells}</div>`;
     el.querySelectorAll('.cal-hr[data-i]').forEach((c) => (c.onclick = () => select(+c.dataset.i)));
-    el.querySelectorAll('.cal-seg').forEach((b) => (b.onclick = () => { select(+b.dataset.i); $('#mapPanel').open = true; $('#mapPanel').scrollIntoView({ behavior: 'smooth' }); }));
+    el.querySelectorAll('.cal-seg').forEach((b) => (b.onclick = () => select(+b.dataset.i)));
   }
 
   function renderWindows() {
@@ -384,13 +385,14 @@
       .map((w) => {
         const a = state.view[w.start];
         const b = state.view[w.end];
-        return `<button class="window" data-i="${w.start}" style="--c:${w.best.color}">
+        return `<button class="window sel-range" data-i="${w.start}" data-end="${w.end}" style="--c:${w.best.color}">
+          <i class="sel-tick" aria-hidden="true"></i>
           <div class="window-time">${a.fullLabel} → ${b.fullLabel}${w.end === state.view.length - 1 ? '+' : ''}${b.ext ? '<span class="tag-ext">extended range</span>' : ''}</div>
           <div class="window-meta"><b>${w.hours.length} h</b> · min WB ${deg(w.minWb)}F ${chip(w.best)} · avg wind ${Math.round(w.avgWind)} mph from ${dirText(w.avgDir)}</div>
         </button>`;
       })
       .join('');
-    el.querySelectorAll('.window').forEach((b) => (b.onclick = () => { select(+b.dataset.i); $('#mapPanel').open = true; $('#mapPanel').scrollIntoView({ behavior: 'smooth' }); }));
+    el.querySelectorAll('.window').forEach((b) => (b.onclick = () => select(+b.dataset.i)));
   }
 
   function renderTable() {
@@ -437,12 +439,32 @@
       <ul class="plume-list">${guns}</ul>`;
   }
 
+  // Show the selected hour in the Snowmaking windows section: a gray line on that day's
+  // 24-hour bar in the calendar, and on any window card (calendar or list) that holds the hour,
+  // placed by where the hour falls inside the window. Moves with the arrow keys.
+  function markWindows(h) {
+    const i = state.sel;
+    document.querySelectorAll('#winCal .cal-day').forEach((d) => {
+      const on = d.dataset.day === h.dayKey;
+      d.classList.toggle('sel-day', on);
+      if (on) d.querySelector('.cal-mark').style.left = `${((h.hour24 + 0.5) / 24) * 100}%`;
+    });
+    document.querySelectorAll('.sel-range').forEach((c) => {
+      const a = +c.dataset.i;
+      const b = +c.dataset.end;
+      const on = i >= a && i <= b;
+      c.classList.toggle('sel', on);
+      if (on) c.querySelector('.sel-tick').style.left = `${((i - a + 0.5) / (b - a + 1)) * 100}%`;
+    });
+  }
+
   function select(i) {
     if (!state.view.length) return;
     state.sel = Math.max(0, Math.min(i, state.view.length - 1));
     const h = state.view[state.sel];
     document.querySelectorAll('#strip .cell').forEach((c) => c.classList.toggle('sel', +c.dataset.i === state.sel));
     document.querySelectorAll('#hourTable tbody tr').forEach((r) => r.classList.toggle('sel', +r.dataset.i === state.sel));
+    markWindows(h);
     charts.setCursor(state.sel);
     snowMap.setHour(h, h.zone.key === 'none' ? '#ced4da' : h.zone.color);
     renderDetail(h);

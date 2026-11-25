@@ -318,7 +318,20 @@ main { max-width: 1400px; margin: 0 auto; padding: 16px; display: grid; grid-tem
 .cal-date { display: flex; align-items: baseline; gap: 4px; font-size: 13px; }
 .cal-date span:first-child { color: var(--muted); display: none; }
 .cal-total { margin-left: auto; font-size: 12px; color: var(--muted); }
-.cal-bar { display: grid; grid-template-columns: repeat(24, 1fr); gap: 1px; height: 10px; }
+.cal-bar { position: relative; display: grid; grid-template-columns: repeat(24, 1fr); gap: 1px; height: 10px; }
+/* Selected hour: gray line on the day's bar and on the window card that holds it */
+.cal-mark, .sel-tick {
+  position: absolute; width: 2px; border-radius: 1px; background: #ced4da; pointer-events: none;
+  transform: translateX(-50%); transition: left .2s ease; display: none;
+}
+.cal-mark { top: -4px; bottom: -4px; box-shadow: 0 0 0 1px rgba(11, 19, 32, .7); }
+.sel-day .cal-mark { display: block; }
+.cal-day.sel-day { border-color: #ced4da; }
+.sel-range { position: relative; overflow: hidden; }
+.sel-range .sel-tick { bottom: 0; height: 6px; width: 3px; border-radius: 2px 2px 0 0; }
+.sel-range.sel .sel-tick { display: block; }
+.sel-range.sel { border-color: #ced4da; border-left-color: var(--c); }
+@media (prefers-reduced-motion: reduce) { .cal-mark, .sel-tick { transition: none; } }
 .cal-hr { background: rgba(255, 255, 255, .08); border-radius: 1px; cursor: pointer; }
 .cal-hr.ok { background: var(--c); }
 .cal-hr.none { background: transparent; cursor: default; }
