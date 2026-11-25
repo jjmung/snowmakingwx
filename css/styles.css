@@ -416,3 +416,31 @@ a.btn { text-decoration: none; display: inline-block; color: var(--text); }
 .wb-limit b { min-width: 52px; }
 .limit-panel { padding: 10px 14px; }
 .limit-panel .wb-limit { margin-bottom: 0; }
+
+/* Background download status (js/bg-cache.js) */
+.bg-status { color: var(--muted); font-size: 12px; }
+.bg-status:empty { display: none; }
+
+/* Collapsible, reorderable sections (js/sections.js) */
+.panel-head.has-sec { justify-content: flex-start; }
+.panel-head.has-sec > :nth-child(2) { margin-left: auto; } /* section tools, or the controls when there are none */
+.sec-ctrl { display: flex; align-items: center; gap: 2px; flex: none; }
+.sec-grip, .sec-toggle {
+  background: transparent; border: 0; color: var(--muted); border-radius: 6px; line-height: 1;
+  width: 26px; height: 26px; display: inline-grid; place-items: center; padding: 0; flex: none;
+}
+.sec-grip { cursor: grab; touch-action: none; font-size: 16px; }
+.sec-grip:hover, .sec-toggle:hover { color: var(--text); background: rgba(255, 255, 255, .06); }
+.sec-grip:focus-visible, .sec-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sec-toggle { font-size: 15px; }
+.sec-toggle span { display: inline-block; transition: transform .15s; }
+.sec-title { cursor: pointer; }
+section.collapsed .sec-toggle span { transform: rotate(-90deg); }
+section.collapsed > :not(:first-child) { display: none; }
+section.collapsed > .panel-head { margin-bottom: 0; }
+section.collapsed > .panel-head > :not(h2):not(.sec-ctrl) { display: none; }
+section.collapsed > .panel-head > .sec-ctrl { margin-left: auto; }
+section.dragging { opacity: .45; }
+.sec-drop { position: absolute; height: 4px; border-radius: 2px; background: var(--accent); pointer-events: none; z-index: 3000; }
+body.sec-dragging, body.sec-dragging * { cursor: grabbing !important; user-select: none; }
+@media (prefers-reduced-motion: reduce) { .sec-toggle span { transition: none; } }

@@ -68,6 +68,8 @@ Keyboard: the left and right arrow keys step through the hours. On the wide 10- 
 
 `history.html`, linked from the header. Works for the current location or any place worldwide that you search for.
 
+Every section can be collapsed and moved with the controls at the right end of its title row: ▾ collapses it (so does clicking the title), and the ⠿ handle drags it, or with the handle focused ↑ / ↓ move it. The layout is remembered on the device; **Reset section layout** at the bottom of the page restores the default.
+
 - **Settings.** Snowmaking threshold (10–34 °F), temperature measure (daily low, mean or high), number of winters shown (20, 30, 50 or all) and the production window.
 - **Production window.** Pick the part of the winter you actually make snow in. The default is **November 1 to February 1**, and any span from November 1 to May 1 can be chosen. The window drives:
   - the temperature trend (the trend tile and the first button in "How each month has changed"),
@@ -75,14 +77,13 @@ Keyboard: the left and right arrow keys step through the hours. On the wide 10- 
   - the whole snowmaking-hours analysis: average hours per winter, best and worst winter, the per-winter chart and its trend line.
 
   Temperature data for all of November through April stays on the page. Months outside the window are dimmed in the monthly bar charts.
+- **Daily temperature by winter.** A line chart of the average temperature for each day of one winter. Pick the winter from a dropdown (1950-51 onward; it opens on the winter in progress, or the latest one between seasons) and set the From and To dates with calendar pickers, anywhere from November 1 to May 1. The default is November 1 to February 1. A dashed line shows the average for the same days over the winters shown in Settings, and a summary gives the period average, coldest and warmest day, and days at or below the threshold.
 - **A typical winter, month by month.** Average, coldest and warmest winter for each month against your threshold.
-- **Nights cold enough to run.** Average days per month with a low at or below the threshold.
-- **Every winter, every month.** A heat map of each winter since 1950, colored by distance from the threshold.
 - **How each month has changed.** Trend per decade for the production window or any single month.
-- **Snowmaking hours.** Hours with wet bulb at or below the threshold, from hourly temperature and humidity. Loaded on request because it is a larger download.
-- **Daily temperature by winter.** A line chart of the average temperature for each day of one winter. Pick the winter from a dropdown (1950-51 onward, including the one in progress) and set the From and To dates with calendar pickers, anywhere from November 1 to May 1. The default is November 1 to February 1. A dashed line shows the average for the same days over the winters shown in Settings, and a summary gives the period average, coldest and warmest day, and days at or below the threshold.
-- **Snowfall in El Niño and La Niña winters.** Seasonal snowfall by ENSO phase and strength, compared with the full-record or 1991–2020 mean.
 - **Monthly summary table.**
+- **Every winter, every month.** A heat map of each winter since 1950, colored by distance from the threshold.
+- **Snowmaking hours.** Hours with wet bulb at or below the threshold, from hourly temperature and humidity. Loaded on request because it is a larger download. Underneath, **Nights cold enough to run** shows the average days per month with a low at or below the threshold (from daily data, so it shows without loading hourly data).
+- **Snowfall in El Niño and La Niña winters.** Seasonal snowfall by ENSO phase and strength, compared with the full-record or 1991–2020 mean.
 
 ---
 
@@ -114,6 +115,7 @@ Keyboard: the left and right arrow keys step through the hours. On the wide 10- 
 | Winters shown | History | 50 |
 | Production window | History | Nov 1 – Feb 1 |
 | Daily temperature date range | History | Nov 1 – Feb 1 |
+| Section order and collapsed sections | History | Default order, all open |
 | Color blind mode (◐ Color blind button in the top bar) | Both | Off |
 
 **In `js/config.js`** (applies to everyone):
@@ -133,7 +135,18 @@ The History page uses the free Open-Meteo archive, which has rate limits, so res
 
 1. **Repository cache** (`data/cache/<lat>_<lon>.json`, listed in `data/index.json`). Shipped with the site and tried first. `scripts/build-cache.mjs` builds a file for every place in `data/locations.json`, and the **Refresh climate cache** GitHub Action reruns it monthly and commits the result.
 2. **Browser cache** (IndexedDB). Anything fetched live is kept on that device, including hourly wet bulb results.
-3. **Live API.** Used only when neither cache has the place, or the cached copy is more than 60 days old. If the live call fails, the older copy is used.
+3. **Live API.** Used only when neither cache has the place, or the cached copy's data is more than 10 days old (the archive itself runs about a week behind, so this is every few days). A refresh fetches only the days since the cached copy (plus a 14-day overlap), not the whole record. If the live call fails, the older copy is used.
+
+**Background downloads.** While either page is open, `js/bg-cache.js` fills the browser cache for every saved location, the open one first: daily history since 1950, then the hourly winter data behind Snowmaking hours (five winters per request), and on the Forecast page the 16-day forecast (kept under 30 minutes old). A line at the bottom of each page shows progress.
+
+Open-Meteo counts a long request as many calls (about one per 14 days of data), so a full download for one place is about 3,800 calls against the free limits of 600 a minute, 5,000 an hour and 10,000 a day. The downloader stays well inside them:
+
+- one request at a time, with a pause after each sized to the request (a 2,000-call request waits several minutes)
+- at most 2,500 calls an hour and 6,000 a day, counting what you load yourself (`js/climate-store.js` keeps a running total in the browser)
+- a pause for the limit's period (an hour, or 6 hours for the daily limit) if the service reports a limit
+- one tab at a time does the work
+
+With three saved resorts the first full download takes about two days of having a page open; after that only small refreshes are needed. To turn background downloads off on a device, set `snowwx.bgOff` to `true` in the browser's local storage.
 
 Cache keys round coordinates to 0.01° (about 1 km), so nearby searches share a file. Place-search results are remembered for 30 days.
 
@@ -187,6 +200,8 @@ To roll back a release, revert its pull request on GitHub.
     js/app.js               Forecast page logic
     js/history.js           History page logic
     js/climate-core.js      Wet bulb and binning rules shared by the page and the cache builder
+    js/climate-store.js     Browser climate cache, Open-Meteo requests and the request ledger
+    js/bg-cache.js          Background downloads for saved locations
     js/enso.js              ONI table and El Niño / La Niña classification
     scripts/build-cache.mjs Climate cache builder
     data/                   Repository climate cache
@@ -196,7 +211,7 @@ Libraries are loaded from a CDN: Chart.js 4.4.1 and Leaflet 1.9.4.
 
 The resort icons in `assets/logos/` are each resort's own website icon (from lutsen.com, snowriver.com and granitepeak.com), used only to identify the resort in the dropdown.
 
-The page links its own scripts and styles with a version tag (`js/app.js?v=1.10.0`). When releasing, change the tag in `index.html` and `history.html` so browsers load the new files instead of cached ones (GitHub Pages lets browsers cache them for 10 minutes).
+The page links its own scripts and styles with a version tag (`js/app.js?v=1.11.0`). When releasing, change the tag in `index.html` and `history.html` so browsers load the new files instead of cached ones (GitHub Pages lets browsers cache them for 10 minutes).
 
 ---
 

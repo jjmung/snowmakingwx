@@ -92,7 +92,11 @@
     if (!force && cached && Date.now() - cached.meta.fetched < CFG.cacheMinutes * 60e3) {
       return show(cached);
     }
-    setStatus('Loading National Weather Service forecast…', 'info');
+    // An older saved forecast (often kept current by the background downloader) shows at once while the new one loads
+    if (!force && cached && Date.now() - cached.meta.fetched < 12 * 36e5) {
+      show(cached);
+      setStatus(`Showing the forecast saved ${new Date(cached.meta.fetched).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}; updating…`, 'info');
+    } else setStatus('Loading National Weather Service forecast…', 'info');
     $('#refreshBtn').disabled = true;
     try {
       const data = await window.SnowWeather.fetchForecast(r.lat, r.lon);

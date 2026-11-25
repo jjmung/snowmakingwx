@@ -7,8 +7,8 @@
   <meta name="description" content="Historical snowmaking temperatures, snowmaking hours and El Niño snowfall for any location.">
   <meta name="theme-color" content="#0b1320">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄</text></svg>">
-  <link rel="stylesheet" href="css/styles.css?v=1.10.0">
-  <link rel="stylesheet" href="css/history.css?v=1.10.0">
+  <link rel="stylesheet" href="css/styles.css?v=1.11.0">
+  <link rel="stylesheet" href="css/history.css?v=1.11.0">
 </head>
 <body>
   <header class="topbar">
@@ -34,7 +34,7 @@
   <main>
     <div id="status" class="status" hidden></div>
 
-    <section class="panel">
+    <section class="panel" data-sec="settings">
       <div class="panel-head"><h2>Settings</h2><span class="hint" id="dataNote"></span></div>
       <div class="ctl-row">
         <label class="ctl">Snowmaking threshold: at or below <b id="thrOut">28</b> °F
@@ -74,43 +74,7 @@
       <p id="cacheHelp" class="hint" hidden></p>
     </section>
 
-    <section class="panel">
-      <div class="panel-head"><h2>A typical winter, month by month</h2></div>
-      <div class="chart-box"><canvas id="profChart"></canvas></div>
-      <p class="hint">Line = average over the winters shown. Dashed lines = coldest and warmest winter for that month.</p>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>Nights cold enough to run</h2><span class="hint">Average number of days per month with a daily low at or below the threshold. Dimmed months are outside the production window.</span></div>
-      <div class="chart-box short"><canvas id="nightsChart"></canvas></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>Every winter, every month</h2>
-        <span class="legend inline"><span><i style="--c:rgb(59,130,246)"></i>Colder than threshold</span><span><i style="--c:rgb(245,120,60)"></i>Warmer</span></span></div>
-      <div class="table-scroll"><table id="heat" class="heat"></table></div>
-      <p class="hint">Each row is a winter (labelled by the year it started). Color deepens up to 15 °F from the threshold. Hover a cell for the value.</p>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>How each month has changed</h2><div class="seg" id="monSeg"></div></div>
-      <p id="trendTxt" class="hint"></p>
-      <div class="chart-box"><canvas id="trendChart"></canvas></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>Snowmaking hours</h2>
-        <button id="hoursBtn" class="btn">Load hourly data</button></div>
-      <p class="hint">Counts hours with wet-bulb temperature at or below the threshold, from hourly reanalysis temperature and humidity (Stull wet-bulb formula, sea-level pressure). Downloads about 1 MB per 5 winters unless the place is already cached, so it only loads when asked. Totals, best and worst winters and the trend cover the production window chosen in Settings (<b id="hoursWinLabel"></b>); dimmed months in the monthly chart are outside it.</p>
-      <div id="hoursProgress" class="hint"></div>
-      <div id="hoursBody" hidden>
-        <div class="stats" id="hoursStats"></div>
-        <div class="chart-box short"><canvas id="hoursMonthChart"></canvas></div>
-        <div class="chart-box short"><canvas id="hoursWinterChart"></canvas></div>
-      </div>
-    </section>
-
-    <section class="panel">
+    <section class="panel" data-sec="daily">
       <div class="panel-head"><h2>Daily temperature by winter</h2>
         <div class="day-pick">
           <label>Winter <select id="dayYear" aria-label="Winter"></select></label>
@@ -124,7 +88,46 @@
       <p class="hint">Average (mean) temperature for each day of the chosen winter. The dashed line is the average for the same calendar days over the winters shown in Settings. Dates can run from November 1 to May 1.</p>
     </section>
 
-    <section class="panel">
+    <section class="panel" data-sec="typical">
+      <div class="panel-head"><h2>A typical winter, month by month</h2></div>
+      <div class="chart-box"><canvas id="profChart"></canvas></div>
+      <p class="hint">Line = average over the winters shown. Dashed lines = coldest and warmest winter for that month.</p>
+    </section>
+
+    <section class="panel" data-sec="trend">
+      <div class="panel-head"><h2>How each month has changed</h2><div class="seg" id="monSeg"></div></div>
+      <p id="trendTxt" class="hint"></p>
+      <div class="chart-box"><canvas id="trendChart"></canvas></div>
+    </section>
+
+    <section class="panel" data-sec="summary">
+      <div class="panel-head"><h2>Monthly summary</h2></div>
+      <div class="table-scroll"><table id="tbl"></table></div>
+    </section>
+
+    <section class="panel" data-sec="heat">
+      <div class="panel-head"><h2>Every winter, every month</h2>
+        <span class="legend inline"><span><i style="--c:rgb(59,130,246)"></i>Colder than threshold</span><span><i style="--c:rgb(245,120,60)"></i>Warmer</span></span></div>
+      <div class="table-scroll"><table id="heat" class="heat"></table></div>
+      <p class="hint">Each row is a winter (labelled by the year it started). Color deepens up to 15 °F from the threshold. Hover a cell for the value.</p>
+    </section>
+
+    <section class="panel" data-sec="hours">
+      <div class="panel-head"><h2>Snowmaking hours</h2>
+        <button id="hoursBtn" class="btn">Load hourly data</button></div>
+      <p class="hint">Counts hours with wet-bulb temperature at or below the threshold, from hourly reanalysis temperature and humidity (Stull wet-bulb formula, sea-level pressure). Downloads about 1 MB per 5 winters unless the place is already cached, so it only loads when asked. Totals, best and worst winters and the trend cover the production window chosen in Settings (<b id="hoursWinLabel"></b>); dimmed months in the monthly chart are outside it.</p>
+      <div id="hoursProgress" class="hint"></div>
+      <div id="hoursBody" hidden>
+        <div class="stats" id="hoursStats"></div>
+        <div class="chart-box short"><canvas id="hoursMonthChart"></canvas></div>
+        <div class="chart-box short"><canvas id="hoursWinterChart"></canvas></div>
+      </div>
+      <div class="panel-head" style="margin-top:12px"><h3 style="margin:0;font-size:14px">Nights cold enough to run</h3></div>
+      <p class="hint">Average number of days per month with a daily low at or below the threshold. Dimmed months are outside the production window.</p>
+      <div class="chart-box short"><canvas id="nightsChart"></canvas></div>
+    </section>
+
+    <section class="panel" data-sec="snow">
       <div class="panel-head"><h2>Snowfall in El Niño and La Niña winters</h2>
         <div class="seg" id="baseSeg">
           <button data-b="record" class="on">Full record mean</button>
@@ -138,24 +141,24 @@
       <div class="table-scroll"><table id="ensoTable"></table></div>
     </section>
 
-    <section class="panel">
-      <div class="panel-head"><h2>Monthly summary</h2></div>
-      <div class="table-scroll"><table id="tbl"></table></div>
-    </section>
-
     <footer>
       <p><b>Data.</b> <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> (ERA5 / ERA5-Land reanalysis, 1950 onward), fetched live for the chosen coordinates. It is a gridded model of the location, not a weather station record, so it can run a few degrees off a nearby station, and modeled snowfall is only a rough guide. Winters are November–April; the current winter is excluded until it finishes. The production window (default November 1 to February 1) works in whole months, so "to February 1" means through January 31.</p>
       <p><b>El Niño and La Niña.</b> Winters are classed from NOAA's Oceanic Niño Index (ONI, 3-month Niño 3.4 anomalies): El Niño when October–January readings stay at or above +0.5 and La Niña when they stay at or below −0.5, with strength from the peak reading. The table and the rule are in <code>js/enso.js</code>. NOAA's official episode list uses slightly different rules (and has begun using a relative index, RONI), so a few winters can differ in strength or class. The phase tilts the odds at best: snowfall in any single winter varies a lot.</p>
+      <p id="bgStatus" class="bg-status"></p>
+      <p><button id="resetLayoutBtn" class="btn ghost" type="button">Reset section layout</button></p>
     </footer>
   </main>
 
   <div class="tip" id="tip"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script src="js/config.js?v=1.10.0"></script>
-  <script src="js/a11y.js?v=1.10.0"></script>
-  <script src="js/resort-picker.js?v=1.10.0"></script>
-  <script src="js/enso.js?v=1.10.0"></script>
-  <script src="js/climate-core.js?v=1.10.0"></script>
-  <script src="js/history.js?v=1.10.0"></script>
+  <script src="js/config.js?v=1.11.0"></script>
+  <script src="js/a11y.js?v=1.11.0"></script>
+  <script src="js/resort-picker.js?v=1.11.0"></script>
+  <script src="js/enso.js?v=1.11.0"></script>
+  <script src="js/climate-core.js?v=1.11.0"></script>
+  <script src="js/climate-store.js?v=1.11.0"></script>
+  <script src="js/sections.js?v=1.11.0"></script>
+  <script src="js/history.js?v=1.11.0"></script>
+  <script src="js/bg-cache.js?v=1.11.0"></script>
 </body>
 </html>
