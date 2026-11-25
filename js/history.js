@@ -41,7 +41,7 @@
       const w = store.get('snowwx.hist.win', WIN_DEFAULT);
       return Array.isArray(w) && Number.isInteger(w[0]) && Number.isInteger(w[1]) && w[0] >= 0 && w[0] < w[1] && w[1] <= 6 ? w : [...WIN_DEFAULT];
     })(),
-    dayYear: null, // winter start year for the daily chart; null = most recent winter that reaches the end date
+    dayYear: null, // winter start year for the daily chart; null = the newest winter that has started (in progress in season)
     dayFrom: '11-01', // MM-DD within the winter (Nov 1 .. May 1)
     dayTo: '02-01',
     base: 'record',
@@ -491,10 +491,8 @@
     const years = dayWinters();
     if (!years.length) return;
     let y = state.dayYear;
-    if (!years.includes(y)) {
-      // default: the latest winter with data through the chosen end date
-      y = [...years].reverse().find((w) => winterDate(w, state.dayTo) <= state.lastDate) ?? years[years.length - 1];
-    }
+    // default: the newest winter that has started, so the season in progress shows first
+    if (!years.includes(y)) y = years[years.length - 1];
     const sel = $('#dayYear');
     sel.innerHTML = [...years].reverse().map((w) => `<option value="${w}"${w === y ? ' selected' : ''}>${yl(w)}${`${w + 1}-04-30` > state.lastDate ? ' (in progress)' : ''}</option>`).join('');
     const from = winterDate(y, state.dayFrom), to = winterDate(y, state.dayTo);

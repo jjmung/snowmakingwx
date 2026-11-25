@@ -9,7 +9,10 @@
 (function () {
   const Core = window.SnowWXCore;
   const DATA_START = '1950-01-01';
-  const MAX_AGE_DAYS = 60; // daily data older than this (by its newest day) is refreshed
+  // Daily data older than this (by its newest day) is refreshed. Refreshes fetch only the new days
+  // (about 5 calls), and the archive runs about a week behind, so this means every few days,
+  // which keeps the season in progress current.
+  const MAX_AGE_DAYS = 10;
   const WINTERS_PER_CHUNK = 5; // hourly data is fetched five winters (Nov–Apr) per request
 
   // ---------- IndexedDB ----------
@@ -126,7 +129,7 @@
   // Days to fetch again at the end of the stored series: the newest reanalysis days can be revised
   const OVERLAP_DAYS = 14;
   // Start date for a daily refresh: everything from 1950 the first time, after that only the
-  // newest days (a 60-day refresh costs about 5 calls instead of about 2,000).
+  // newest days (a refresh costs about 2–5 calls instead of about 2,000).
   const dailyFrom = (old) => (old && old.daily && old.through ? addDays(old.through, -OVERLAP_DAYS) : DATA_START);
 
   async function fetchDaily(place, old = null) {

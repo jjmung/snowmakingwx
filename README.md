@@ -77,7 +77,7 @@ Every section can be collapsed and moved with the controls at the right end of i
   - the whole snowmaking-hours analysis: average hours per winter, best and worst winter, the per-winter chart and its trend line.
 
   Temperature data for all of November through April stays on the page. Months outside the window are dimmed in the monthly bar charts.
-- **Daily temperature by winter.** A line chart of the average temperature for each day of one winter. Pick the winter from a dropdown (1950-51 onward, including the one in progress) and set the From and To dates with calendar pickers, anywhere from November 1 to May 1. The default is November 1 to February 1. A dashed line shows the average for the same days over the winters shown in Settings, and a summary gives the period average, coldest and warmest day, and days at or below the threshold.
+- **Daily temperature by winter.** A line chart of the average temperature for each day of one winter. Pick the winter from a dropdown (1950-51 onward; it opens on the winter in progress, or the latest one between seasons) and set the From and To dates with calendar pickers, anywhere from November 1 to May 1. The default is November 1 to February 1. A dashed line shows the average for the same days over the winters shown in Settings, and a summary gives the period average, coldest and warmest day, and days at or below the threshold.
 - **A typical winter, month by month.** Average, coldest and warmest winter for each month against your threshold.
 - **How each month has changed.** Trend per decade for the production window or any single month.
 - **Monthly summary table.**
@@ -135,7 +135,7 @@ The History page uses the free Open-Meteo archive, which has rate limits, so res
 
 1. **Repository cache** (`data/cache/<lat>_<lon>.json`, listed in `data/index.json`). Shipped with the site and tried first. `scripts/build-cache.mjs` builds a file for every place in `data/locations.json`, and the **Refresh climate cache** GitHub Action reruns it monthly and commits the result.
 2. **Browser cache** (IndexedDB). Anything fetched live is kept on that device, including hourly wet bulb results.
-3. **Live API.** Used only when neither cache has the place, or the cached copy is more than 60 days old. A refresh fetches only the days since the cached copy (plus a 14-day overlap), not the whole record. If the live call fails, the older copy is used.
+3. **Live API.** Used only when neither cache has the place, or the cached copy's data is more than 10 days old (the archive itself runs about a week behind, so this is every few days). A refresh fetches only the days since the cached copy (plus a 14-day overlap), not the whole record. If the live call fails, the older copy is used.
 
 **Background downloads.** While either page is open, `js/bg-cache.js` fills the browser cache for every saved location, the open one first: daily history since 1950, then the hourly winter data behind Snowmaking hours (five winters per request), and on the Forecast page the 16-day forecast (kept under 30 minutes old). A line at the bottom of each page shows progress.
 

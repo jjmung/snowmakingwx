@@ -15,7 +15,8 @@ Added
 - **History page sections can be collapsed and reordered.** At the right end of each section's title row, a ▾ button (or a click on the title) collapses it and a ⠿ handle drags it to a new place, by mouse or touch; with the handle focused, ↑ / ↓ move the section. The layout is remembered on the device, and **Reset section layout** at the bottom of the page restores the default.
 
 Changed
-- **Climate history refreshes fetch only the new days** (plus a 14-day overlap) instead of the whole record since 1950: about 6 data-service calls instead of about 2,000.
+- **Climate history refreshes fetch only the new days** (plus a 14-day overlap) instead of the whole record since 1950: a few data-service calls instead of about 2,000. Because refreshes are now this cheap, cached history refreshes once its data is more than 10 days old (was 60), keeping the season in progress current.
+- **Daily temperature by winter opens on the season in progress** (or the latest winter between seasons). It used to open on the latest winter whose data reached the chart's end date, which skipped the current season until February.
 - **History page order**: Settings, Daily temperature by winter, A typical winter month by month, How each month has changed, Monthly summary, Every winter every month, Snowmaking hours, Snowfall in El Niño and La Niña winters. **Nights cold enough to run** is now part of the Snowmaking hours section, below the hourly charts.
 
 Notes
