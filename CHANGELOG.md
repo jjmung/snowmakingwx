@@ -12,7 +12,7 @@ Added
 - **Background downloads.** While either page is open, every saved location's data is downloaded into the browser, the open location first: daily climate history since 1950, then the hourly winter data behind Snowmaking hours, and (Forecast page) the 16-day forecast. A line at the bottom of each page shows progress, such as "Saved in this browser: Granite Peak history ✓ · Lutsen Mountains history 40%".
 - The History page and its Snowmaking hours chart then open from the browser without waiting on the data service, and the hours button uses winters already downloaded.
 - The Forecast page shows a saved forecast (up to 12 hours old) at once while it loads the new one.
-- **History page sections can be collapsed and reordered.** Each section has a ▾ button (or click the title) to collapse it and a ⠿ handle to drag it to a new place, by mouse or touch; with the handle focused, ↑ / ↓ move the section. The layout is remembered on the device, and **Reset section layout** at the bottom of the page restores the default.
+- **History page sections can be collapsed and reordered.** At the right end of each section's title row, a ▾ button (or a click on the title) collapses it and a ⠿ handle drags it to a new place, by mouse or touch; with the handle focused, ↑ / ↓ move the section. The layout is remembered on the device, and **Reset section layout** at the bottom of the page restores the default.
 
 Changed
 - **Climate history refreshes fetch only the new days** (plus a 14-day overlap) instead of the whole record since 1950: about 6 data-service calls instead of about 2,000.

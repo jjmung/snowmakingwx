@@ -1,5 +1,5 @@
-// Collapsible, reorderable page sections. Each <section data-sec="id"> gets, in its first
-// .panel-head, a drag handle and a collapse button. Order and collapsed sections are saved
+// Collapsible, reorderable page sections. Each <section data-sec="id"> gets, at the right end
+// of its first .panel-head, a drag handle and a collapse button. Order and collapsed sections are saved
 // in localStorage under `storageKey`, so each device keeps its own layout.
 //
 // Reorder: drag the ⠿ handle (mouse or touch), or focus it and press ↑ / ↓.
@@ -52,10 +52,12 @@
       toggle.className = 'sec-toggle';
       toggle.innerHTML = '<span aria-hidden="true">▾</span>';
       toggle.setAttribute('aria-label', `Show or hide “${title}”`);
-      const lead = document.createElement('div');
-      lead.className = 'sec-lead';
-      h2.replaceWith(lead);
-      lead.append(grip, toggle, h2);
+      // Controls sit at the right end of the title row, after any section tools
+      const ctrl = document.createElement('div');
+      ctrl.className = 'sec-ctrl';
+      ctrl.append(grip, toggle);
+      head.append(ctrl);
+      head.classList.add('has-sec');
       h2.classList.add('sec-title');
       toggle.onclick = () => { setCollapsed(sec, !sec.classList.contains('collapsed')); save(); };
       h2.onclick = toggle.onclick;

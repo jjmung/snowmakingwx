@@ -68,7 +68,7 @@ Keyboard: the left and right arrow keys step through the hours. On the wide 10- 
 
 `history.html`, linked from the header. Works for the current location or any place worldwide that you search for.
 
-Every section can be collapsed (▾ button, or click its title) and moved: drag the ⠿ handle, or focus it and press ↑ / ↓. The layout is remembered on the device; **Reset section layout** at the bottom of the page restores the default.
+Every section can be collapsed and moved with the controls at the right end of its title row: ▾ collapses it (so does clicking the title), and the ⠿ handle drags it, or with the handle focused ↑ / ↓ move it. The layout is remembered on the device; **Reset section layout** at the bottom of the page restores the default.
 
 - **Settings.** Snowmaking threshold (10–34 °F), temperature measure (daily low, mean or high), number of winters shown (20, 30, 50 or all) and the production window.
 - **Production window.** Pick the part of the winter you actually make snow in. The default is **November 1 to February 1**, and any span from November 1 to May 1 can be chosen. The window drives:
