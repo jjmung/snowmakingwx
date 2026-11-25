@@ -76,12 +76,11 @@ Keyboard: the left and right arrow keys step through the hours. On the wide 10- 
 
   Temperature data for all of November through April stays on the page. Months outside the window are dimmed in the monthly bar charts.
 - **Daily temperature by winter.** A line chart of the average temperature for each day of one winter. Pick the winter from a dropdown (1950-51 onward, including the one in progress) and set the From and To dates with calendar pickers, anywhere from November 1 to May 1. The default is November 1 to February 1. A dashed line shows the average for the same days over the winters shown in Settings, and a summary gives the period average, coldest and warmest day, and days at or below the threshold.
-- **A typical winter, month by month.** Average, coldest and warmest winter for each month against your threshold.
-- **Nights cold enough to run.** Average days per month with a low at or below the threshold.
 - **Monthly summary table.**
+- **A typical winter, month by month.** Average, coldest and warmest winter for each month against your threshold.
 - **Every winter, every month.** A heat map of each winter since 1950, colored by distance from the threshold.
 - **How each month has changed.** Trend per decade for the production window or any single month.
-- **Snowmaking hours.** Hours with wet bulb at or below the threshold, from hourly temperature and humidity. Loaded on request because it is a larger download.
+- **Snowmaking hours.** Hours with wet bulb at or below the threshold, from hourly temperature and humidity. Loaded on request because it is a larger download. Underneath, **Nights cold enough to run** shows the average days per month with a low at or below the threshold (from daily data, so it shows without loading hourly data).
 - **Snowfall in El Niño and La Niña winters.** Seasonal snowfall by ENSO phase and strength, compared with the full-record or 1991–2020 mean.
 
 ---

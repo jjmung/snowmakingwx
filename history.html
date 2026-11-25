@@ -89,19 +89,14 @@
     </section>
 
     <section class="panel">
+      <div class="panel-head"><h2>Monthly summary</h2></div>
+      <div class="table-scroll"><table id="tbl"></table></div>
+    </section>
+
+    <section class="panel">
       <div class="panel-head"><h2>A typical winter, month by month</h2></div>
       <div class="chart-box"><canvas id="profChart"></canvas></div>
       <p class="hint">Line = average over the winters shown. Dashed lines = coldest and warmest winter for that month.</p>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>Nights cold enough to run</h2><span class="hint">Average number of days per month with a daily low at or below the threshold. Dimmed months are outside the production window.</span></div>
-      <div class="chart-box short"><canvas id="nightsChart"></canvas></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>Monthly summary</h2></div>
-      <div class="table-scroll"><table id="tbl"></table></div>
     </section>
 
     <section class="panel">
@@ -127,6 +122,9 @@
         <div class="chart-box short"><canvas id="hoursMonthChart"></canvas></div>
         <div class="chart-box short"><canvas id="hoursWinterChart"></canvas></div>
       </div>
+      <div class="panel-head" style="margin-top:12px"><h3 style="margin:0;font-size:14px">Nights cold enough to run</h3></div>
+      <p class="hint">Average number of days per month with a daily low at or below the threshold. Dimmed months are outside the production window.</p>
+      <div class="chart-box short"><canvas id="nightsChart"></canvas></div>
     </section>
 
     <section class="panel">
