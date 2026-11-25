@@ -14,7 +14,7 @@
     data: null,
     obs: null, // latest station observation for the Now card
     view: [],
-    rangeH: store.get('snowwx.range', 72),
+    rangeH: store.get('snowwx.range', 384), // 16 days unless the user picked another range
     sel: 0,
     playTimer: null,
   };
@@ -458,11 +458,25 @@
     });
   }
 
+  // The outlook strip scrolls sideways on long ranges: keep the selected cell in view,
+  // the same way the charts keep their selected hour in view.
+  function keepStripInView() {
+    const wrap = $('#strip').parentElement;
+    const cell = $('#strip .cell.sel');
+    if (!cell || wrap.scrollWidth <= wrap.clientWidth) return;
+    const x = cell.getBoundingClientRect().left - wrap.getBoundingClientRect().left + wrap.scrollLeft;
+    const w = cell.offsetWidth;
+    const pad = Math.min(80, wrap.clientWidth / 4);
+    if (x < wrap.scrollLeft + pad) wrap.scrollLeft = x - pad;
+    else if (x + w > wrap.scrollLeft + wrap.clientWidth - pad) wrap.scrollLeft = x + w - wrap.clientWidth + pad;
+  }
+
   function select(i) {
     if (!state.view.length) return;
     state.sel = Math.max(0, Math.min(i, state.view.length - 1));
     const h = state.view[state.sel];
     document.querySelectorAll('#strip .cell').forEach((c) => c.classList.toggle('sel', +c.dataset.i === state.sel));
+    keepStripInView();
     document.querySelectorAll('#hourTable tbody tr').forEach((r) => r.classList.toggle('sel', +r.dataset.i === state.sel));
     markWindows(h);
     charts.setCursor(state.sel);
