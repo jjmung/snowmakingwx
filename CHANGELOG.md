@@ -4,6 +4,18 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.9.3 — November 25, 2026
+
+**Forecast page: 16-day default, outlook strip follows the selected hour**
+
+Changed
+- The forecast range now **defaults to 16 days** (was 72 hours). A range you have picked before is kept.
+
+Fixed
+- On long ranges the hourly outlook strip is wider than the screen. Picking an hour off screen (from the calendar, a window card, the charts or the arrow keys) now scrolls the strip so the highlighted hour is in view, in step with the wet bulb and wind charts.
+
+---
+
 ## 1.9.2 — November 25, 2026
 
 **Snowmaking windows: selected hour shown, no jump to the map** ([PR #12](https://github.com/jjmung/snowmakingwx/pull/12))
