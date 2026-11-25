@@ -6,7 +6,7 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ## 1.11 — November 25, 2026
 
-**Both pages: background downloads for saved locations; History page layout**
+**Both pages: background downloads for saved locations; History page layout** ([PR #15](https://github.com/jjmung/snowmakingwx/pull/15))
 
 Added
 - **Background downloads.** While either page is open, every saved location's data is downloaded into the browser, the open location first: daily climate history since 1950, then the hourly winter data behind Snowmaking hours, and (Forecast page) the 16-day forecast. A line at the bottom of each page shows progress, such as "Saved in this browser: Granite Peak history ✓ · Lutsen Mountains history 40%".
