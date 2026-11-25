@@ -37,12 +37,54 @@
   <main>
     <div id="status" class="status" hidden></div>
 
+    <section class="panel limit-panel">
+      <div class="wb-limit" id="wbLimit">
+        <label for="wbLimitRange"><i class="swatch" aria-hidden="true"></i>Wet bulb limit</label>
+        <button id="wbLimitDown" class="btn icon" type="button" aria-label="Lower wet bulb limit 1 degree">−</button>
+        <input type="range" id="wbLimitRange" min="15" max="35" step="0.5" aria-label="Wet bulb limit in °F">
+        <button id="wbLimitUp" class="btn icon" type="button" aria-label="Raise wet bulb limit 1 degree">+</button>
+        <b id="wbLimitVal"></b>
+        <button id="wbLimitReset" class="btn ghost" type="button" hidden>Reset</button>
+      </div>
+    </section>
+
     <section class="cards" id="cards"></section>
 
     <section class="panel">
       <div class="panel-head">
+        <div class="head-group">
+          <h2>Snowmaking windows</h2>
+          <div class="view-menu" id="winView">
+            <button type="button" class="view-btn" id="winViewBtn" aria-haspopup="true" aria-expanded="false" aria-label="Windows view"></button>
+            <div class="view-list" id="winViewList" role="menu" hidden>
+              <button type="button" role="menuitemradio" data-v="cal"></button>
+              <button type="button" role="menuitemradio" data-v="both"></button>
+              <button type="button" role="menuitemradio" data-v="cards"></button>
+            </div>
+          </div>
+        </div>
+        <div class="seg range-seg" id="rangeSegWin" aria-label="Forecast range">
+          <button data-h="48">48h</button>
+          <button data-h="72">72h</button>
+          <button data-h="168">7d</button>
+          <button data-h="240">10d</button>
+          <button data-h="384">16d</button>
+        </div>
+      </div>
+      <div id="winWrap" class="win-wrap">
+        <div id="winCal" class="win-cal" aria-label="Snowmaking windows calendar"></div>
+        <div id="windows" class="windows"></div>
+      </div>
+      <details class="table-details">
+        <summary>Hourly table</summary>
+        <div class="table-scroll"><table id="hourTable"></table></div>
+      </details>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
         <h2>Hourly snowmaking outlook</h2>
-        <div class="seg" id="rangeSeg">
+        <div class="seg range-seg" id="rangeSeg" aria-label="Forecast range">
           <button data-h="48">48h</button>
           <button data-h="72">72h</button>
           <button data-h="168">7d</button>
@@ -56,16 +98,14 @@
     </section>
 
     <section class="panel">
-      <div class="panel-head"><h2>Wet bulb, temperature &amp; humidity</h2><span class="hint">Tap the chart to pick an hour</span></div>
-      <div class="wb-limit" id="wbLimit">
-        <label for="wbLimitRange"><i class="swatch" aria-hidden="true"></i>Wet bulb limit</label>
-        <button id="wbLimitDown" class="btn icon" type="button" aria-label="Lower wet bulb limit 1 degree">−</button>
-        <input type="range" id="wbLimitRange" min="15" max="35" step="0.5" aria-label="Wet bulb limit in °F">
-        <button id="wbLimitUp" class="btn icon" type="button" aria-label="Raise wet bulb limit 1 degree">+</button>
-        <b id="wbLimitVal"></b>
-        <button id="wbLimitReset" class="btn ghost" type="button" hidden>Reset</button>
+      <div class="panel-head"><h2>Wet bulb, temperature &amp; humidity</h2><span class="hint">Tap the chart to pick an hour · ← → keys step hours</span></div>
+      <div id="wbReadout" class="chart-readout" aria-live="polite"></div>
+      <div class="chart-scroll">
+        <div class="sky-track" id="wbSky" aria-hidden="true">
+          <div class="sky-inner"><div class="sky-band"></div><div class="sky-body"><i class="sun"></i><i class="moon"></i></div></div>
+        </div>
+        <div class="chart-box"><canvas id="wbChart"></canvas></div>
       </div>
-      <div class="chart-scroll"><div class="chart-box"><canvas id="wbChart"></canvas></div></div>
     </section>
 
     <section class="panel">
@@ -73,9 +113,9 @@
       <div class="chart-scroll"><div class="chart-box short"><canvas id="windChart"></canvas></div></div>
     </section>
 
-    <section class="panel" id="mapPanel">
-      <div class="panel-head">
-        <h2>Plume drift map</h2>
+    <details class="panel collapsible" id="mapPanel">
+      <summary><h2>Plume drift map</h2></summary>
+      <div class="panel-head map-tools">
         <div class="tools">
           <select id="gunTypeSelect" aria-label="Gun type"></select>
           <button id="addGunBtn" class="btn">+ Add gun</button>
@@ -91,16 +131,7 @@
         <input type="range" id="hourSlider" min="0" max="71" value="0" aria-label="Forecast hour">
         <span id="sliderLabel"></span>
       </div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>Snowmaking windows</h2></div>
-      <div id="windows" class="windows"></div>
-      <details class="table-details">
-        <summary>Hourly table</summary>
-        <div class="table-scroll"><table id="hourTable"></table></div>
-      </details>
-    </section>
+    </details>
 
     <footer>
       <p id="updated"></p>
@@ -113,6 +144,7 @@
   <script src="js/config.js"></script>
   <script src="js/a11y.js"></script>
   <script src="js/weather.js"></script>
+  <script src="js/sun.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/map.js"></script>
   <script src="js/app.js"></script>

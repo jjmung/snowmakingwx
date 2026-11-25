@@ -4,6 +4,30 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.9 — November 25, 2026
+
+**Forecast page: layout, windows calendar, chart readout and day / night**
+
+Changed
+- **Wet bulb limit** slider moved to the top of the page, above the summary cards. Its **default is now 26 °F** (was 28 °F), so Marginal covers 25–26 °F. If you have moved the slider before, your setting is kept.
+- **Snowmaking windows** moved up, between the summary cards and the hourly outlook. The hourly table moved with it.
+- **Plume drift map** is now collapsible and starts closed. Once you open or close it, the page remembers that. Clicking a window still opens the map at that hour.
+- **Wet bulb, temperature & humidity chart**: the floating hover box is gone. The hovered or selected hour's time, wet bulb and rating, temperature, dew point and humidity show in a bar above the chart, in larger text, so the lines stay visible.
+- **Arrow keys** on the 10d and 16d views now step through the hours instead of scrolling the wide charts sideways, and the charts scroll to keep the selected hour on screen. Arrow keys also update the chart's data bar while the mouse rests on the chart.
+
+Added
+- **Range picker** (48h to 16d) on the Snowmaking windows section, linked to the one on the hourly outlook.
+- **Windows calendar**: one cell per forecast day, laid out by week. Each day shows its usable hours, a 24-hour bar colored by wet bulb rating, and a card per window with times, hours, coldest wet bulb and rating, and average wind. Windows crossing midnight are split across both days, marked → and ←. Click a card to open the map at that hour, or a bar segment to select that hour. On phones the days stack in a simple grid.
+- **View dropdown** next to the Snowmaking windows heading, with icons: Calendar (the default), Calendar + cards, or Cards. The choice is remembered.
+- **Day and night on the wet bulb chart**: a sky strip above the chart, colored by the sun's height hour by hour, with a sun or crescent moon that glides to the selected hour. The sun's height follows its real altitude. Night hours are shaded across the chart, and the data bar says Day or Night with the next sunset or sunrise.
+
+Notes
+- Sunrise, sunset and sun height are computed on the page from the location (`js/sun.js`), to within about a minute. The moon marks night only; its height and shape are not the real moon's position or phase.
+- The sun and moon slide between hours; devices set to reduce motion move them without animation.
+- The History page's snowmaking threshold still defaults to 28 °F.
+
+---
+
 ## 1.8 — November 15, 2026
 
 **Color blind mode** ([PR #8](https://github.com/jjmung/snowmakingwx/pull/8))

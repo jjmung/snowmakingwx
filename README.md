@@ -42,6 +42,7 @@ Current version: **1.8** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) f
 `index.html`. Covers the next 48 hours, 72 hours, 7 days, 10 days or 16 days. Hours past the end of the NWS forecast (about day 7) come from Open-Meteo global models and are marked as extended range.
 
 - **Summary cards.** Current wet bulb and rating as observed at the nearest reporting NWS station (linked to its weather.gov observation page, with the forecast alongside), the next snowmaking window, total workable hours and the coldest wet bulb in the range.
+- **Snowmaking windows.** Each continuous stretch of workable hours, with its length, minimum wet bulb and average wind. A view dropdown next to the heading shows them as a **calendar** (the default), the calendar plus **cards**, or cards only. The calendar lays the days out by week: each day has a 24-hour bar of usable hours and a card for each window, and windows that cross midnight continue on the next day. The section has its own range picker, linked to the outlook's, and an hourly table sits underneath.
 - **Hourly outlook strip.** One colored cell per hour, rated by wet bulb. Hatched cells mean the wind is over the limit.
 
   | Rating | Wet bulb |
@@ -49,18 +50,17 @@ Current version: **1.8** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) f
   | Excellent | ≤ 18 °F |
   | Good | 18–22 °F |
   | Fair | 22–25 °F |
-  | Marginal | 25–28 °F |
-  | Too warm | > 28 °F |
+  | Marginal | 25–26 °F |
+  | Too warm | > 26 °F |
 
-- **Wet bulb, temperature & humidity chart.** Wet bulb, air temperature, dew point and relative humidity, over shaded rating bands. The dashed line is the go / no-go wet bulb limit.
-- **Adjustable wet bulb limit.** A slider above the chart (with −/+ buttons and Reset) moves the go / no-go line anywhere from 15 to 35 °F. The default is 28 °F. The rating bands, outlook strip, snowmaking windows, hour counts and legend all follow the limit you set, and it is remembered on that device.
+- **Wet bulb, temperature & humidity chart.** Wet bulb, air temperature, dew point and relative humidity, over shaded rating bands. The dashed line is the go / no-go wet bulb limit. A bar above the chart shows the values for the hovered or selected hour, so nothing covers the lines. A sky strip with a moving sun or moon shows day and night, night hours are shaded on the chart, and the bar gives the next sunrise or sunset (worked out on the page from the location).
+- **Adjustable wet bulb limit.** A slider at the top of the page (with −/+ buttons and Reset) moves the go / no-go line anywhere from 15 to 35 °F. The default is 26 °F. The rating bands, outlook strip, snowmaking windows, hour counts and legend all follow the limit you set, and it is remembered on that device.
 - **Wind chart.** Sustained wind and gusts with caution and limit lines. Arrows point the way snow will drift.
-- **Plume drift map.** Satellite, topo or street map. Place fan or tower guns, then scrub or play through the hours to see the estimated plume direction and reach for each gun.
-- **Snowmaking windows.** Each continuous stretch of workable hours, with its length, minimum wet bulb and average wind. An hourly table sits underneath.
+- **Plume drift map.** Collapsible; starts closed. Satellite, topo or street map. Place fan or tower guns, then scrub or play through the hours to see the estimated plume direction and reach for each gun.
 - **Location search.** Type a resort, town, address or `lat, lon` in the header (U.S. only). The address bar updates so the link can be shared, and **☆ Save** adds the place to your list.
 - **Saved locations.** Granite Peak (Wausau, WI) is the default. "Save map center as location" adds a place, or open a link like `?lat=44.926&lon=-89.684&name=My%20Hill`.
 
-Keyboard: the left and right arrow keys step through the hours.
+Keyboard: the left and right arrow keys step through the hours. On the wide 10- and 16-day charts they move the hour instead of scrolling the chart, and the charts scroll to keep the selected hour in view.
 
 ---
 
@@ -104,8 +104,10 @@ Keyboard: the left and right arrow keys step through the hours.
 
 | Setting | Page | Default |
 | --- | --- | --- |
-| Wet bulb limit | Forecast | 28 °F |
+| Wet bulb limit | Forecast | 26 °F |
 | Forecast range | Forecast | 72 h |
+| Snowmaking windows view | Forecast | Calendar |
+| Plume drift map open or closed | Forecast | Closed |
 | Saved locations and placed guns | Forecast | Granite Peak, no guns |
 | Snowmaking threshold | History | 28 °F |
 | Temperature measure | History | Daily low |
@@ -178,6 +180,7 @@ To roll back a release, revert its pull request on GitHub.
     js/a11y.js              Color blind mode toggle
     js/weather.js           NWS forecast loader and wet bulb math
     js/charts.js            Forecast charts (Chart.js)
+    js/sun.js               Sun position, sunrise and sunset
     js/map.js               Plume drift map (Leaflet)
     js/app.js               Forecast page logic
     js/history.js           History page logic
