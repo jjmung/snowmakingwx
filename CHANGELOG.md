@@ -6,7 +6,7 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ## 1.9.3 — November 25, 2026
 
-**Forecast page: 16-day default, outlook strip follows the selected hour**
+**Forecast page: 16-day default, outlook strip follows the selected hour** ([PR #13](https://github.com/jjmung/snowmakingwx/pull/13))
 
 Changed
 - The forecast range now **defaults to 16 days** (was 72 hours). A range you have picked before is kept.
