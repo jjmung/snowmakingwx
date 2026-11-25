@@ -696,6 +696,8 @@
   }
 
   // ---------- start ----------
+  // Sections can be collapsed and dragged into a different order; remembered per device
+  window.SnowSections.enhance({ storageKey: 'snowwx.hist.layout', resetButton: $('#resetLayoutBtn') });
   loadResorts();
   window.SnowResortPicker.enhance($('#resortSelect'), Object.fromEntries(CFG.resorts.filter((r) => r.logo).map((r) => [r.id, r.logo])));
   syncControls();
