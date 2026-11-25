@@ -75,6 +75,20 @@
     </section>
 
     <section class="panel">
+      <div class="panel-head"><h2>Daily temperature by winter</h2>
+        <div class="day-pick">
+          <label>Winter <select id="dayYear" aria-label="Winter"></select></label>
+          <label>From <input type="date" id="dayFrom" aria-label="Start date"></label>
+          <label>To <input type="date" id="dayTo" aria-label="End date"></label>
+          <button id="dayReset" class="btn ghost" type="button" hidden>Reset dates</button>
+        </div>
+      </div>
+      <p id="dayTxt" class="hint"></p>
+      <div class="chart-box"><canvas id="dayChart"></canvas></div>
+      <p class="hint">Average (mean) temperature for each day of the chosen winter. The dashed line is the average for the same calendar days over the winters shown in Settings. Dates can run from November 1 to May 1.</p>
+    </section>
+
+    <section class="panel">
       <div class="panel-head"><h2>A typical winter, month by month</h2></div>
       <div class="chart-box"><canvas id="profChart"></canvas></div>
       <p class="hint">Line = average over the winters shown. Dashed lines = coldest and warmest winter for that month.</p>
@@ -83,6 +97,11 @@
     <section class="panel">
       <div class="panel-head"><h2>Nights cold enough to run</h2><span class="hint">Average number of days per month with a daily low at or below the threshold. Dimmed months are outside the production window.</span></div>
       <div class="chart-box short"><canvas id="nightsChart"></canvas></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Monthly summary</h2></div>
+      <div class="table-scroll"><table id="tbl"></table></div>
     </section>
 
     <section class="panel">
@@ -111,20 +130,6 @@
     </section>
 
     <section class="panel">
-      <div class="panel-head"><h2>Daily temperature by winter</h2>
-        <div class="day-pick">
-          <label>Winter <select id="dayYear" aria-label="Winter"></select></label>
-          <label>From <input type="date" id="dayFrom" aria-label="Start date"></label>
-          <label>To <input type="date" id="dayTo" aria-label="End date"></label>
-          <button id="dayReset" class="btn ghost" type="button" hidden>Reset dates</button>
-        </div>
-      </div>
-      <p id="dayTxt" class="hint"></p>
-      <div class="chart-box"><canvas id="dayChart"></canvas></div>
-      <p class="hint">Average (mean) temperature for each day of the chosen winter. The dashed line is the average for the same calendar days over the winters shown in Settings. Dates can run from November 1 to May 1.</p>
-    </section>
-
-    <section class="panel">
       <div class="panel-head"><h2>Snowfall in El Niño and La Niña winters</h2>
         <div class="seg" id="baseSeg">
           <button data-b="record" class="on">Full record mean</button>
@@ -136,11 +141,6 @@
       <p class="hint">Bars are seasonal snowfall (July–June, labelled by start year). Blue bars are El Niño winters and orange bars are La Niña winters, darker for stronger events; gray bars are neutral winters. The dashed line is the comparison mean. Seasons with missing data are skipped.</p>
       <div class="panel-head" style="margin-top:12px"><h3 style="margin:0;font-size:14px">ENSO winters</h3><div class="seg" id="phaseSeg"><button data-p="both" class="on">Both</button><button data-p="El Niño">El Niño</button><button data-p="La Niña">La Niña</button></div></div>
       <div class="table-scroll"><table id="ensoTable"></table></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>Monthly summary</h2></div>
-      <div class="table-scroll"><table id="tbl"></table></div>
     </section>
 
     <footer>

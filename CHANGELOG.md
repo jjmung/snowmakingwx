@@ -6,7 +6,7 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ## 1.11 — November 25, 2026
 
-**Both pages: background downloads for saved locations**
+**Both pages: background downloads for saved locations; History page section order**
 
 Added
 - **Background downloads.** While either page is open, every saved location's data is downloaded into the browser, the open location first: daily climate history since 1950, then the hourly winter data behind Snowmaking hours, and (Forecast page) the 16-day forecast. A line at the bottom of each page shows progress, such as "Saved in this browser: Granite Peak history ✓ · Lutsen Mountains history 40%".
@@ -15,6 +15,7 @@ Added
 
 Changed
 - **Climate history refreshes fetch only the new days** (plus a 14-day overlap) instead of the whole record since 1950: about 6 data-service calls instead of about 2,000.
+- **History page order**: Daily temperature by winter now comes right after Settings, above A typical winter, month by month; Monthly summary now sits above Every winter, every month.
 
 Notes
 - Rate limits: one request at a time, paced by size; at most 2,500 calls an hour and 6,000 a day, counting your own History page use; a pause of an hour (6 hours for the daily limit) if the service reports a limit; one tab at a time. A full download is about 3,800 calls per location, so three resorts take about two days of having a page open.
