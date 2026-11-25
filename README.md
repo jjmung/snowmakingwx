@@ -193,6 +193,9 @@ To roll back a release, revert its pull request on GitHub.
     js/a11y.js              Color blind mode toggle
     js/resort-picker.js     Location dropdown with resort logos
     assets/logos/           Resort icons for the location dropdown
+    assets/icons/           App icon: icon.svg (master) and PNGs for browser tabs, iPhone/iPad and Android
+    assets/og-image.png     Link-preview card (1200x630); its source is assets/og-image.html
+    site.webmanifest        App name and icons for adding the site to a home screen
     js/weather.js           NWS forecast loader and wet bulb math
     js/charts.js            Forecast charts (Chart.js)
     js/sun.js               Sun position, sunrise and sunset
@@ -209,9 +212,11 @@ To roll back a release, revert its pull request on GitHub.
 
 Libraries are loaded from a CDN: Chart.js 4.4.1 and Leaflet 1.9.4.
 
+**Icon and link previews.** Both pages link the app icon (`assets/icons/`) and carry Open Graph and Twitter card tags, so a shared link shows the preview card `assets/og-image.png` in Slack, Teams, iMessage, Facebook, LinkedIn, X, Discord and similar apps. The tags use the full GitHub Pages address, which those apps require. Apps cache previews: after changing the card, a link already shared may show the old one for a while (Facebook's Sharing Debugger and LinkedIn's Post Inspector can refresh it).
+
 The resort icons in `assets/logos/` are each resort's own website icon (from lutsen.com, snowriver.com and granitepeak.com), used only to identify the resort in the dropdown.
 
-The page links its own scripts and styles with a version tag (`js/app.js?v=1.11.0`). When releasing, change the tag in `index.html` and `history.html` so browsers load the new files instead of cached ones (GitHub Pages lets browsers cache them for 10 minutes).
+The page links its own scripts and styles with a version tag (`js/app.js?v=1.12.0`). When releasing, change the tag in `index.html` and `history.html` so browsers load the new files instead of cached ones (GitHub Pages lets browsers cache them for 10 minutes).
 
 ---
 
