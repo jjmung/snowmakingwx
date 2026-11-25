@@ -6,7 +6,7 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ## 1.10 — November 25, 2026
 
-**Both pages: more built-in resorts, location dropdown with logos**
+**Both pages: more built-in resorts, location dropdown with logos** ([PR #14](https://github.com/jjmung/snowmakingwx/pull/14))
 
 Added
 - **Lutsen Mountains** (Lutsen, MN) and **Snow River** (Wakefield, MI) as built-in locations. The list order is Granite Peak, Lutsen Mountains, Snow River.
