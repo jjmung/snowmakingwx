@@ -45,20 +45,40 @@
 
   // ---------- data ----------
 
-  function decorate(hours, tz) {
+  function decorate(hours, tz, lat, lon) {
     const f = (opts) => new Intl.DateTimeFormat('en-US', { timeZone: tz, ...opts });
     const fHour = f({ hour: 'numeric', hourCycle: 'h23' });
     const fShortHour = f({ hour: 'numeric' });
     const fDay = f({ weekday: 'short' });
     const fFull = f({ weekday: 'short', month: 'numeric', day: 'numeric', hour: 'numeric' });
+    const fDate = f({ year: 'numeric', month: '2-digit', day: '2-digit' }); // for a per-day key
+    const fMonth = f({ month: 'short' });
+    const fDayNum = f({ day: 'numeric' });
     for (const h of hours) {
       h.hour24 = parseInt(fHour.format(h.t), 10) % 24;
       h.hourShort = fShortHour.format(h.t).replace(' AM', 'a').replace(' PM', 'p');
       h.dayShort = fDay.format(h.t);
       h.fullLabel = fFull.format(h.t);
+      h.dayKey = fDate.format(h.t);
+      h.monthShort = fMonth.format(h.t);
+      h.dayNum = parseInt(fDayNum.format(h.t), 10);
       h.zone = zoneFor(h.wbF);
       h.windFlag = windFlag(h);
       h.dirText = dirText(h.windDir);
+    }
+    // Day / night: sun altitude for each hour, and the next sunrise or sunset after it.
+    if (hours.length && lat != null) {
+      const { sunAltitude, sunEvents, HORIZON } = window.SnowSun;
+      const fTime = f({ hour: 'numeric', minute: '2-digit' });
+      const events = sunEvents(hours[0].t - 86400e3, hours[hours.length - 1].t + 2 * 86400e3, lat, lon);
+      let k = 0;
+      for (const h of hours) {
+        h.sunAlt = sunAltitude(h.t, lat, lon);
+        h.isDay = h.sunAlt > HORIZON;
+        while (k < events.length && events[k].t <= h.t) k++;
+        const ev = events[k];
+        h.nextSun = ev ? { type: ev.type, label: fTime.format(ev.t) } : null;
+      }
     }
     return hours;
   }
@@ -111,7 +131,7 @@
   function show(data) {
     const now = Math.floor(Date.now() / 3600e3) * 3600e3;
     data.hours = data.hours.filter((h) => h.t >= now);
-    decorate(data.hours, data.meta.timeZone);
+    decorate(data.hours, data.meta.timeZone, state.resort.lat, state.resort.lon);
     // Keep the selected hour across refreshes
     const prevT = state.view[state.sel]?.t;
     state.data = data;
@@ -128,7 +148,7 @@
     if (!state.data) return;
     state.view = state.data.hours.slice(0, state.rangeH);
     state.sel = Math.min(state.sel, state.view.length - 1);
-    document.querySelectorAll('#rangeSeg button').forEach((b) => b.classList.toggle('on', +b.dataset.h === state.rangeH));
+    document.querySelectorAll('.range-seg button').forEach((b) => b.classList.toggle('on', +b.dataset.h === state.rangeH));
     sizeCharts();
     charts.update(state.view);
     renderCards();
@@ -143,7 +163,7 @@
 
   function sizeCharts() {
     const perHour = state.view.length > 168 ? 6 : 9;
-    document.querySelectorAll('.chart-box').forEach((b) => {
+    document.querySelectorAll('.chart-box, .sky-track').forEach((b) => {
       b.style.minWidth = `${Math.max(state.view.length * perHour, 0)}px`;
     });
   }
@@ -162,15 +182,18 @@
       }
     });
     if (cur) wins.push(cur);
-    return wins.map((w) => {
-      const minWb = Math.min(...w.hours.map((h) => h.wbF));
-      const avgWind = w.hours.reduce((s, h) => s + (h.windMph || 0), 0) / w.hours.length;
-      // Vector-average wind direction
-      let x = 0, y = 0;
-      for (const h of w.hours) if (h.windDir != null) { x += Math.sin((h.windDir * Math.PI) / 180); y += Math.cos((h.windDir * Math.PI) / 180); }
-      const avgDir = (Math.atan2(x, y) * 180 / Math.PI + 360) % 360;
-      return { ...w, minWb, avgWind, avgDir, best: zoneFor(minWb) };
-    });
+    return wins.map((w) => ({ ...w, ...summarize(w.hours) }));
+  }
+
+  // Min wet bulb, its zone, and average wind speed / direction for a run of hours.
+  function summarize(hours) {
+    const minWb = Math.min(...hours.map((h) => h.wbF));
+    const avgWind = hours.reduce((s, h) => s + (h.windMph || 0), 0) / hours.length;
+    // Vector-average wind direction
+    let x = 0, y = 0;
+    for (const h of hours) if (h.windDir != null) { x += Math.sin((h.windDir * Math.PI) / 180); y += Math.cos((h.windDir * Math.PI) / 180); }
+    const avgDir = (Math.atan2(x, y) * 180 / Math.PI + 360) % 360;
+    return { minWb, avgWind, avgDir, best: zoneFor(minWb) };
   }
 
   function chip(zone) {
@@ -274,8 +297,84 @@
     });
   }
 
+  // Calendar of the snowmaking windows: one cell per forecast day, laid out by week.
+  // Each day shows a 24-hour bar (usable hours in their zone color) and the part of
+  // every window that falls on that day; windows crossing midnight continue on the next day.
+  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  function renderWindowCalendar(wins) {
+    const el = $('#winCal');
+    const v = state.view;
+    if (!v.length) { el.innerHTML = ''; return; }
+
+    const days = [];
+    const byKey = new Map();
+    v.forEach((h, i) => {
+      let d = byKey.get(h.dayKey);
+      if (!d) {
+        d = { key: h.dayKey, first: h, slots: Array(24).fill(null), segs: [], ext: false };
+        byKey.set(h.dayKey, d);
+        days.push(d);
+      }
+      d.slots[h.hour24] = i;
+      if (h.ext) d.ext = true;
+    });
+
+    for (const w of wins) {
+      let seg = null;
+      for (let i = w.start; i <= w.end; i++) {
+        const h = v[i];
+        if (!seg || seg.day !== h.dayKey) {
+          seg = { day: h.dayKey, start: i, end: i, hours: [], contFrom: i > w.start };
+          byKey.get(h.dayKey).segs.push(seg);
+        }
+        seg.end = i;
+        seg.hours.push(h);
+      }
+      const segs = days.flatMap((d) => d.segs).filter((sg) => sg.start >= w.start && sg.end <= w.end);
+      segs.forEach((sg, k) => { sg.contTo = k < segs.length - 1 || w.end === v.length - 1; });
+    }
+
+    const lead = WEEKDAYS.indexOf(days[0].first.dayShort);
+    const blanks = '<div class="cal-day blank" aria-hidden="true"></div>'.repeat(Math.max(lead, 0));
+    const cells = days
+      .map((d) => {
+        const usableHours = d.slots.filter((i) => i != null && usable(v[i])).length;
+        const bar = d.slots
+          .map((i, hr) => {
+            if (i == null) return '<i class="cal-hr none"></i>';
+            const h = v[i];
+            const ok = usable(h);
+            return `<i class="cal-hr${ok ? ' ok' : ''}" data-i="${i}" style="--c:${h.zone.color}" title="${h.fullLabel}: WB ${deg(h.wbF)}F (${h.zone.label}), wind ${h.dirText} ${num(h.windMph)} mph${ok ? '' : ' · not usable'}"></i>`;
+          })
+          .join('');
+        const segs = d.segs
+          .map((sg) => {
+            const sum = summarize(sg.hours);
+            const a = v[sg.start];
+            const b = v[sg.end];
+            const time = sg.start === sg.end ? a.hourShort : `${a.hourShort}–${b.hourShort}`;
+            return `<button class="cal-seg" data-i="${sg.start}" style="--c:${sum.best.color}" title="${a.fullLabel} → ${b.fullLabel}">
+              <span class="cal-seg-time">${sg.contFrom ? '← ' : ''}${time}${sg.contTo ? ' →' : ''}</span>
+              <span class="cal-seg-meta"><b>${sg.hours.length} h</b> · ${deg(sum.minWb)}F ${chip(sum.best)}</span>
+              <span class="cal-seg-meta">${Math.round(sum.avgWind)} mph ${dirText(sum.avgDir)}</span>
+            </button>`;
+          })
+          .join('');
+        return `<div class="cal-day${d.ext ? ' ext' : ''}${usableHours ? '' : ' idle'}">
+          <div class="cal-date"><span>${d.first.dayShort}</span> <b>${d.first.monthShort} ${d.first.dayNum}</b>${usableHours ? `<span class="cal-total">${usableHours} h</span>` : ''}</div>
+          <div class="cal-bar">${bar}</div>
+          ${segs || '<div class="cal-none">No window</div>'}
+        </div>`;
+      })
+      .join('');
+    el.innerHTML = `<div class="cal-head">${WEEKDAYS.map((w) => `<div>${w}</div>`).join('')}</div><div class="cal-grid">${blanks}${cells}</div>`;
+    el.querySelectorAll('.cal-hr[data-i]').forEach((c) => (c.onclick = () => select(+c.dataset.i)));
+    el.querySelectorAll('.cal-seg').forEach((b) => (b.onclick = () => { select(+b.dataset.i); $('#mapPanel').open = true; $('#mapPanel').scrollIntoView({ behavior: 'smooth' }); }));
+  }
+
   function renderWindows() {
     const wins = findWindows(state.view);
+    renderWindowCalendar(wins);
     const el = $('#windows');
     if (!wins.length) {
       el.innerHTML = `<p class="muted">No hours with wet bulb ≤ ${CFG.wetBulbZones[3].max}°F and workable wind in this range.</p>`;
@@ -291,7 +390,7 @@
         </button>`;
       })
       .join('');
-    el.querySelectorAll('.window').forEach((b) => (b.onclick = () => { select(+b.dataset.i); $('#mapPanel').scrollIntoView({ behavior: 'smooth' }); }));
+    el.querySelectorAll('.window').forEach((b) => (b.onclick = () => { select(+b.dataset.i); $('#mapPanel').open = true; $('#mapPanel').scrollIntoView({ behavior: 'smooth' }); }));
   }
 
   function renderTable() {
@@ -522,6 +621,18 @@
     onGunsChanged: (guns) => store.set(`snowwx.guns.${state.resort.id}`, guns),
   });
 
+  // Plume drift map starts collapsed; once the user opens or closes it, that state is kept.
+  const mapPanel = $('#mapPanel');
+  mapPanel.open = store.get('snowwx.mapOpen', false);
+  mapPanel.addEventListener('toggle', () => {
+    store.set('snowwx.mapOpen', mapPanel.open);
+    if (!mapPanel.open) return;
+    // Leaflet can't size a hidden map; re-measure on open and keep the same center.
+    const c = snowMap.center();
+    snowMap.invalidate();
+    snowMap.map.setView([c.lat, c.lon], c.zoom, { animate: false });
+  });
+
   const gunType = $('#gunTypeSelect');
   for (const [k, t] of Object.entries(CFG.gunTypes)) gunType.add(new Option(t.label, k));
   gunType.onchange = () => snowMap.setAddType(gunType.value);
@@ -554,13 +665,50 @@
 
   $('#resortSelect').onchange = (e) => selectResort(e.target.value);
   $('#refreshBtn').onclick = () => load(true);
-  $('#rangeSeg').onclick = (e) => {
+  // Snowmaking windows view: calendar (default), calendar + cards, or cards only. Remembered.
+  const ic = (body) => `<svg class="view-ic" viewBox="0 0 16 16" aria-hidden="true">${body}</svg>`;
+  const IC_CAL = '<rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5 1.5v3M11 1.5v3"/>';
+  const IC_CARDS = '<rect x="2" y="2.5" width="12" height="4" rx="1"/><rect x="2" y="9.5" width="12" height="4" rx="1"/>';
+  const WIN_VIEWS = {
+    cal: { label: 'Calendar', icon: ic(IC_CAL) },
+    both: { label: 'Calendar + cards', icon: ic('<rect x="1.5" y="2" width="7" height="7" rx="1"/><path d="M1.5 4.5h7"/><rect x="1.5" y="11" width="13" height="3" rx="1"/><path d="M10.5 3h4M10.5 5.5h4M10.5 8h4"/>') },
+    cards: { label: 'Cards', icon: ic(IC_CARDS) },
+  };
+  const viewBtn = $('#winViewBtn');
+  const viewList = $('#winViewList');
+  viewList.querySelectorAll('button').forEach((b) => (b.innerHTML = `${WIN_VIEWS[b.dataset.v].icon}${WIN_VIEWS[b.dataset.v].label}`));
+  function setWinView(v) {
+    if (!WIN_VIEWS[v]) v = 'cal';
+    $('#winWrap').dataset.view = v;
+    viewBtn.innerHTML = `${WIN_VIEWS[v].icon}<span>${WIN_VIEWS[v].label}</span><span class="caret" aria-hidden="true">▾</span>`;
+    viewBtn.setAttribute('aria-label', `Windows view: ${WIN_VIEWS[v].label}`);
+    viewList.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', b.dataset.v === v));
+    store.set('snowwx.winView', v);
+  }
+  function openViewMenu(open) {
+    viewList.hidden = !open;
+    viewBtn.setAttribute('aria-expanded', open);
+    if (open) (viewList.querySelector('[aria-checked="true"]') || viewList.querySelector('button')).focus();
+  }
+  setWinView(store.get('snowwx.winView', 'cal'));
+  viewBtn.onclick = () => openViewMenu(viewList.hidden);
+  viewList.onclick = (e) => { const b = e.target.closest('button'); if (!b) return; setWinView(b.dataset.v); openViewMenu(false); viewBtn.focus(); };
+  viewList.onkeydown = (e) => {
+    const items = [...viewList.querySelectorAll('button')];
+    const k = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); items[(k + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus(); }
+    if (e.key === 'Escape') { openViewMenu(false); viewBtn.focus(); }
+  };
+  document.addEventListener('click', (e) => { if (!viewList.hidden && !e.target.closest('#winView')) openViewMenu(false); });
+
+  // Range pickers on Snowmaking windows and Hourly outlook share one setting.
+  document.querySelectorAll('.range-seg').forEach((seg) => (seg.onclick = (e) => {
     const b = e.target.closest('button');
     if (!b) return;
     state.rangeH = +b.dataset.h;
     store.set('snowwx.range', state.rangeH);
     render();
-  };
+  }));
   $('#hourSlider').oninput = (e) => select(+e.target.value);
 
   $('#wbLimitRange').oninput = (e) => setWbLimit(+e.target.value);
@@ -581,10 +729,13 @@
   };
 
   // Keyboard: left/right arrows step through hours
+  // preventDefault stops the browser from scrolling the wide (10d / 16d) charts sideways
+  // instead; the charts scroll themselves to keep the selected hour in view.
   document.addEventListener('keydown', (e) => {
-    if (e.target.matches('input, select, textarea')) return;
-    if (e.key === 'ArrowRight') select(state.sel + 1);
-    if (e.key === 'ArrowLeft') select(state.sel - 1);
+    if (e.target.matches('input, select, textarea') || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    select(state.sel + (e.key === 'ArrowRight' ? 1 : -1));
   });
 
   renderLegend();

@@ -53,6 +53,62 @@
     },
   };
 
+  // ---------- day / night ----------
+  // Sky color for a sun altitude (degrees): night, twilight, a warm glow at the horizon, day.
+  const SKY_STOPS = [
+    [-18, [11, 18, 34]],
+    [-8, [32, 40, 78]],
+    [-2, [92, 70, 110]],
+    [1, [196, 120, 70]],
+    [8, [74, 128, 186]],
+    [40, [96, 160, 222]],
+  ];
+  function skyColor(alt) {
+    if (alt == null) return 'transparent';
+    if (alt <= SKY_STOPS[0][0]) return `rgb(${SKY_STOPS[0][1]})`;
+    for (let k = 1; k < SKY_STOPS.length; k++) {
+      const [a1, c1] = SKY_STOPS[k];
+      if (alt <= a1) {
+        const [a0, c0] = SKY_STOPS[k - 1];
+        const f = (alt - a0) / (a1 - a0);
+        return `rgb(${c0.map((v, j) => Math.round(v + (c1[j] - v) * f)).join(',')})`;
+      }
+    }
+    return `rgb(${SKY_STOPS[SKY_STOPS.length - 1][1]})`;
+  }
+  // How dark night is, 0 (sun up) to 1 (sun 12° or more below the horizon).
+  const nightLevel = (alt) => Math.max(0, Math.min(1, -alt / 12));
+
+  // Darkens the night hours across the whole chart, fading through twilight.
+  const dayNightPlugin = {
+    id: 'dayNight',
+    beforeDatasetsDraw(chart) {
+      const view = chart.$view;
+      if (!view || !view.length) return;
+      const { top, bottom, left, right } = chart.chartArea;
+      const x = chart.scales.x;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(left, top, right - left, bottom - top);
+      ctx.clip();
+      view.forEach((h, i) => {
+        if (h.sunAlt == null) return;
+        const a = nightLevel(h.sunAlt);
+        if (!a) return;
+        const x0 = x.getPixelForValue(i - 0.5);
+        const x1 = x.getPixelForValue(i + 0.5);
+        ctx.fillStyle = `rgba(2, 6, 20, ${(a * 0.32).toFixed(3)})`;
+        ctx.fillRect(x0, top, x1 - x0 + 0.5, bottom - top);
+      });
+      ctx.restore();
+    },
+    // Line the sky track up with the plot area and move the sun / moon to the selected hour.
+    afterRender(chart) {
+      if (chart.$placeSky) chart.$placeSky();
+    },
+  };
+
   // Shaded wet bulb rating bands behind the temperature chart
   function zoneBandsPlugin(zones) {
     return {
@@ -199,6 +255,60 @@
       if (pts.length) onSelect(pts[0].index);
     }
 
+    // Readout above the wet bulb chart: the hovered hour, or the selected hour when not hovering.
+    const readout = document.getElementById('wbReadout');
+    let wbHover = null;
+    const fmt = (v, unit) => (v == null ? '—' : `${Math.round(v)}${unit}`);
+    function showReadout() {
+      if (!readout) return;
+      const i = wbHover ?? wbChart.$cursor;
+      const h = view[i];
+      if (wbChart.$placeSky) placeSky();
+      if (!h) { readout.innerHTML = ''; return; }
+      const ds = wbChart.data.datasets;
+      const item = (k, label, value, extra = '') =>
+        `<span class="ro-item"><i class="ro-key${ds[k].borderDash?.length ? ' dashed' : ''}" style="--c:${ds[k].borderColor}"></i>${label} <b>${value}</b>${extra}</span>`;
+      readout.innerHTML = `<span class="ro-time">${h.fullLabel}${wbHover == null ? ' <small>selected</small>' : ''}</span>
+        ${item(0, 'Wet bulb', fmt(h.wbF, '°F'), h.zone ? ` <span class="chip" style="--c:${h.zone.color}">${h.zone.label}</span>` : '')}
+        ${item(1, 'Temp', fmt(h.tempF, '°F'))}
+        ${item(2, 'Dew point', fmt(h.dewF, '°F'))}
+        ${item(3, 'Humidity', fmt(h.rh, '%'))}
+        ${h.sunAlt == null ? '' : `<span class="ro-item ro-sun"><i class="ro-ic ${h.isDay ? 'sun' : 'moon'}"></i><b>${h.isDay ? 'Day' : 'Night'}</b>${h.nextSun ? ` · ${h.nextSun.type === 'rise' ? 'sunrise' : 'sunset'} ${h.nextSun.label}` : ''}</span>`}`;
+    }
+
+    // Sky track above the chart: sky color hour by hour, and a sun (day) or moon (night)
+    // that glides to the selected or hovered hour. Sun height follows its real altitude.
+    const sky = document.getElementById('wbSky');
+    let skyKey = '';
+    function placeSky() {
+      if (!sky) return;
+      const area = wbChart.chartArea;
+      if (!area || !view.length || view[0].sunAlt == null) { sky.hidden = true; return; }
+      sky.hidden = false;
+      const inner = sky.firstElementChild;
+      inner.style.left = `${area.left}px`;
+      inner.style.width = `${area.right - area.left}px`;
+      const x = wbChart.scales.x;
+      const span = area.right - area.left;
+      // Rebuild the sky gradient only when the hours or the width change
+      const key = `${view.length}:${view[0].t}:${Math.round(span)}`;
+      if (key !== skyKey) {
+        skyKey = key;
+        const stops = view.map((h, i) => `${skyColor(h.sunAlt)} ${(((x.getPixelForValue(i) - area.left) / span) * 100).toFixed(2)}%`);
+        inner.querySelector('.sky-band').style.background = `linear-gradient(to right, ${stops.join(', ')})`;
+      }
+      const i = Math.max(0, Math.min(view.length - 1, wbHover ?? wbChart.$cursor ?? 0));
+      const h = view[i];
+      const body = inner.querySelector('.sky-body');
+      const maxAlt = Math.max(10, ...view.map((v) => v.sunAlt));
+      // 0 = on the horizon (bottom of the track), 1 = top. The moon rises as the night deepens.
+      const lift = h.isDay ? Math.max(0, h.sunAlt) / maxAlt : nightLevel(h.sunAlt) * 0.75;
+      body.style.left = `${x.getPixelForValue(i) - area.left}px`;
+      body.style.setProperty('--lift', lift.toFixed(3));
+      body.classList.toggle('night', !h.isDay);
+    }
+    wbCanvas.addEventListener('mouseleave', () => { wbHover = null; showReadout(); });
+
     const wbChart = new Chart(wbCanvas, {
       type: 'line',
       data: {
@@ -223,10 +333,18 @@
         },
         plugins: {
           legend: { labels: { boxWidth: 12, boxHeight: 3 } },
-          tooltip: { ...tooltip, callbacks: { ...tooltip.callbacks, label: (c) => `${c.dataset.label}: ${Math.round(c.parsed.y)}` } },
+          // No floating box over the lines: the hovered hour is shown in a bar above the chart.
+          tooltip: {
+            ...tooltip,
+            enabled: false,
+            external: ({ tooltip: t }) => {
+              wbHover = t.opacity === 0 || !t.dataPoints?.length ? null : t.dataPoints[0].dataIndex;
+              showReadout();
+            },
+          },
         },
       },
-      plugins: [zoneBandsPlugin(cfg.wetBulbZones), extendedPlugin, cursorPlugin],
+      plugins: [zoneBandsPlugin(cfg.wetBulbZones), dayNightPlugin, extendedPlugin, cursorPlugin],
     });
 
     const windChart = new Chart(windCanvas, {
@@ -267,8 +385,11 @@
       plugins: [windLimitsPlugin(cfg.wind), windArrowsPlugin, extendedPlugin, cursorPlugin],
     });
 
+    wbChart.$placeSky = placeSky;
+
     function update(newView) {
       view = newView;
+      wbChart.$view = view;
       tickStep = view.length <= 48 ? 3 : view.length <= 168 ? 6 : 12;
       const ext = view.findIndex((h) => h.ext);
       wbChart.$extStart = windChart.$extStart = ext < 0 ? null : ext;
@@ -294,13 +415,32 @@
 
       wbChart.update();
       windChart.update();
+      showReadout();
     }
 
+    // A new selection (click, ← / → keys, strip, calendar, map slider) replaces any hover
+    // in the readout, so arrow keys update it even while the mouse rests on the chart.
     function setCursor(i) {
+      wbHover = null;
+      wbChart.setActiveElements([]);
+      wbChart.tooltip?.setActiveElements([], { x: 0, y: 0 });
       wbChart.$cursor = i;
       windChart.$cursor = i;
       wbChart.draw();
       windChart.draw();
+      showReadout();
+      keepInView(wbChart, i);
+      keepInView(windChart, i);
+    }
+
+    // When a chart is wider than the screen (10d / 16d), scroll it so the selected hour stays visible.
+    function keepInView(chart, i) {
+      const box = chart.canvas.closest('.chart-scroll');
+      if (!box || box.scrollWidth <= box.clientWidth || !chart.scales.x) return;
+      const x = chart.scales.x.getPixelForValue(i);
+      const pad = Math.min(80, box.clientWidth / 4);
+      if (x < box.scrollLeft + pad) box.scrollLeft = x - pad;
+      else if (x > box.scrollLeft + box.clientWidth - pad) box.scrollLeft = x - box.clientWidth + pad;
     }
 
     return { update, setCursor };

@@ -15,7 +15,7 @@ window.SNOWWX_CONFIG = {
     { key: 'excellent', label: 'Excellent', max: 18, color: '#4dabf7' },
     { key: 'good', label: 'Good', max: 22, color: '#3bc9db' },
     { key: 'fair', label: 'Fair', max: 25, color: '#69db7c' },
-    { key: 'marginal', label: 'Marginal', max: 28, color: '#ffd43b' },
+    { key: 'marginal', label: 'Marginal', max: 26, color: '#ffd43b' },
     { key: 'none', label: 'Too warm', max: Infinity, color: '#495057' },
   ],
 
