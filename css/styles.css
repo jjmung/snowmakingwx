@@ -111,7 +111,7 @@ select {
   border-bottom: 1px solid var(--border);
 }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.logo { font-size: 28px; color: var(--accent); }
+.logo { width: 34px; height: 34px; flex: none; display: block; border-radius: 8px; }
 .brand h1 { margin: 0; font-size: 18px; letter-spacing: .02em; }
 .brand .sub { color: var(--muted); font-size: 12px; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }

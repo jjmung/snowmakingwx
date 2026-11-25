@@ -4,6 +4,22 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.12 — November 25, 2026
+
+**App icon and link previews** ([PR #16](https://github.com/jjmung/snowmakingwx/pull/16))
+
+Added
+- **App icon**: a snowflake over a snow-covered mountain on a winter-blue tile, in the browser tab, the page header, and on iPhone, iPad and Android home screens (`assets/icons/`, `site.webmanifest`).
+- **Link previews**: shared links to the Forecast or History page now show a preview card with the icon, the name and "Snowmaking forecasts & climate history" in Slack, Teams, iMessage, Facebook, LinkedIn, X, Discord and similar apps.
+
+Changed
+- The ❄ emoji in the page header and tab is replaced by the new icon.
+
+Notes
+- Apps cache link previews, so a link shared before this release may keep its old preview for a while.
+
+---
+
 ## 1.11 — November 25, 2026
 
 **Both pages: background downloads for saved locations; History page layout** ([PR #15](https://github.com/jjmung/snowmakingwx/pull/15))

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a2240"/><stop offset=".65" stop-color="#174f8f"/><stop offset="1" stop-color="#2a73c2"/></linearGradient>
+    <linearGradient id="lit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e4f0fc"/></linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8d5f2"/><stop offset="1" stop-color="#9cc3ea"/></linearGradient>
+    <radialGradient id="glow" cx="256" cy="176" r="170" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7fb8f0" stop-opacity=".35"/><stop offset="1" stop-color="#7fb8f0" stop-opacity="0"/></radialGradient>
+    <clipPath id="tile"><rect width="512" height="512" rx="112"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="512" height="512" fill="url(#sky)"/>
+    <circle cx="256" cy="176" r="170" fill="url(#glow)"/>
+    <path d="M-10 404 L96 344 L150 368 L232 318 L300 352 L382 300 L522 372 V522 H-10Z" fill="#3f86d0" opacity=".55"/>
+    <path d="M-10 522 V470 L258 330 L330 522Z" fill="url(#lit)"/>
+    <path d="M258 330 L522 460 V522 H330Z" fill="url(#shade)"/>
+    <path d="M256.0 172.0L256.0 62.0 M256.0 117.0L279.3 93.7 M256.0 117.0L232.7 93.7 M256.0 88.4L271.6 72.8 M256.0 88.4L240.4 72.8 M256.0 172.0L160.7 117.0 M208.4 144.5L199.8 112.6 M208.4 144.5L176.5 153.0 M183.6 130.2L177.9 108.9 M183.6 130.2L162.3 135.9 M256.0 172.0L160.7 227.0 M208.4 199.5L176.5 191.0 M208.4 199.5L199.8 231.4 M183.6 213.8L162.3 208.1 M183.6 213.8L177.9 235.1 M256.0 172.0L256.0 282.0 M256.0 227.0L232.7 250.3 M256.0 227.0L279.3 250.3 M256.0 255.6L240.4 271.2 M256.0 255.6L271.6 271.2 M256.0 172.0L351.3 227.0 M303.6 199.5L312.2 231.4 M303.6 199.5L335.5 191.0 M328.4 213.8L334.1 235.1 M328.4 213.8L349.7 208.1 M256.0 172.0L351.3 117.0 M303.6 144.5L335.5 153.0 M303.6 144.5L312.2 112.6 M328.4 130.2L349.7 135.9 M328.4 130.2L334.1 108.9" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
