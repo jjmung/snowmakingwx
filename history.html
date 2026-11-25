@@ -7,8 +7,8 @@
   <meta name="description" content="Historical snowmaking temperatures, snowmaking hours and El Niño snowfall for any location.">
   <meta name="theme-color" content="#0b1320">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄</text></svg>">
-  <link rel="stylesheet" href="css/styles.css?v=1.10.0">
-  <link rel="stylesheet" href="css/history.css?v=1.10.0">
+  <link rel="stylesheet" href="css/styles.css?v=1.11.0">
+  <link rel="stylesheet" href="css/history.css?v=1.11.0">
 </head>
 <body>
   <header class="topbar">
@@ -146,16 +146,19 @@
     <footer>
       <p><b>Data.</b> <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noopener">Open-Meteo Historical Weather API</a> (ERA5 / ERA5-Land reanalysis, 1950 onward), fetched live for the chosen coordinates. It is a gridded model of the location, not a weather station record, so it can run a few degrees off a nearby station, and modeled snowfall is only a rough guide. Winters are November–April; the current winter is excluded until it finishes. The production window (default November 1 to February 1) works in whole months, so "to February 1" means through January 31.</p>
       <p><b>El Niño and La Niña.</b> Winters are classed from NOAA's Oceanic Niño Index (ONI, 3-month Niño 3.4 anomalies): El Niño when October–January readings stay at or above +0.5 and La Niña when they stay at or below −0.5, with strength from the peak reading. The table and the rule are in <code>js/enso.js</code>. NOAA's official episode list uses slightly different rules (and has begun using a relative index, RONI), so a few winters can differ in strength or class. The phase tilts the odds at best: snowfall in any single winter varies a lot.</p>
+      <p id="bgStatus" class="bg-status"></p>
     </footer>
   </main>
 
   <div class="tip" id="tip"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script src="js/config.js?v=1.10.0"></script>
-  <script src="js/a11y.js?v=1.10.0"></script>
-  <script src="js/resort-picker.js?v=1.10.0"></script>
-  <script src="js/enso.js?v=1.10.0"></script>
-  <script src="js/climate-core.js?v=1.10.0"></script>
-  <script src="js/history.js?v=1.10.0"></script>
+  <script src="js/config.js?v=1.11.0"></script>
+  <script src="js/a11y.js?v=1.11.0"></script>
+  <script src="js/resort-picker.js?v=1.11.0"></script>
+  <script src="js/enso.js?v=1.11.0"></script>
+  <script src="js/climate-core.js?v=1.11.0"></script>
+  <script src="js/climate-store.js?v=1.11.0"></script>
+  <script src="js/history.js?v=1.11.0"></script>
+  <script src="js/bg-cache.js?v=1.11.0"></script>
 </body>
 </html>

@@ -416,3 +416,7 @@ a.btn { text-decoration: none; display: inline-block; color: var(--text); }
 .wb-limit b { min-width: 52px; }
 .limit-panel { padding: 10px 14px; }
 .limit-panel .wb-limit { margin-bottom: 0; }
+
+/* Background download status (js/bg-cache.js) */
+.bg-status { color: var(--muted); font-size: 12px; }
+.bg-status:empty { display: none; }

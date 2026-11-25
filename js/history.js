@@ -23,7 +23,7 @@
   const OTHER_COLOR = '#4a5d72';
   // Threshold line: green normally; yellow in color blind mode, where green and the orange lines can look alike
   const THR_COLOR = window.SnowA11y && window.SnowA11y.colorBlind ? '#f0e442' : '#69db7c';
-  const DATA_START = '1950-01-01';
+  const Store = window.SnowClimateStore; // browser cache + Open-Meteo requests, shared with the background downloader
 
   const state = {
     place: null,
@@ -183,36 +183,6 @@
   };
 
 // ---------- cache (browser IndexedDB + repo data/cache files) ----------
-  const CACHE_MAX_AGE_DAYS = 60; // older than this (by the newest day of data), try live and keep the cache as a fallback
-  const idb = {
-    db: null,
-    open() {
-      if (this.db) return this.db;
-      this.db = new Promise((resolve) => {
-        try {
-          const rq = indexedDB.open('snowwx-history', 1);
-          rq.onupgradeneeded = () => rq.result.createObjectStore('climate');
-          rq.onsuccess = () => resolve(rq.result);
-          rq.onerror = () => resolve(null);
-        } catch { resolve(null); }
-      });
-      return this.db;
-    },
-    async get(key) {
-      const db = await this.open();
-      if (!db) return null;
-      return new Promise((resolve) => {
-        try { const r = db.transaction('climate').objectStore('climate').get(key); r.onsuccess = () => resolve(r.result || null); r.onerror = () => resolve(null); } catch { resolve(null); }
-      });
-    },
-    async set(key, val) {
-      const db = await this.open();
-      if (!db) return;
-      return new Promise((resolve) => {
-        try { const tx = db.transaction('climate', 'readwrite'); tx.objectStore('climate').put(val, key); tx.oncomplete = () => resolve(); tx.onerror = () => resolve(); } catch { resolve(); }
-      });
-    },
-  };
   let repoIndex = null;
   async function repoCacheFor(key) {
     try {
@@ -225,8 +195,7 @@
       return p && p.v === Core.CACHE_VERSION ? p : null;
     } catch { return null; }
   }
-  const ageDays = (p) => (Date.now() - Date.parse(p.through)) / 864e5;
-  function saveBrowserCache() { if (state.payload) idb.set(state.payload.key, state.payload); }
+  function saveBrowserCache() { if (state.payload) return Store.save(state.payload); }
 
   function payloadToDaily(p) {
     const n = p.daily.min.length;
@@ -238,20 +207,6 @@
   }
 
   // ---------- data ----------
-  function isoDay(d) { return d.toISOString().slice(0, 10); }
-  function archiveEnd() { return isoDay(new Date(Date.now() - 7 * 864e5)); } // ERA5 lags a few days
-
-  async function archive(params) {
-    const url = `https://archive-api.open-meteo.com/v1/archive?${new URLSearchParams({ latitude: Core.roundCoord(state.place.lat).toFixed(2), longitude: Core.roundCoord(state.place.lon).toFixed(2), timezone: 'auto', ...params })}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      let why = '';
-      try { why = (await res.json()).reason || ''; } catch { /* ignore */ }
-      throw new Error(why || `data service returned ${res.status}`);
-    }
-    return res.json();
-  }
-
   async function loadDaily() {
     const token = ++state.loadToken;
     state.bins = null;
@@ -262,34 +217,19 @@
     const key = Core.cacheKey(state.place.lat, state.place.lon);
     setStatus(`Loading ${state.place.name} climate history…`);
 
-    const [local, repo] = await Promise.all([idb.get(key), repoCacheFor(key)]);
+    const [local, repo] = await Promise.all([Store.get(key), repoCacheFor(key)]);
     if (token !== state.loadToken) return;
-    const cached = [local && local.v === Core.CACHE_VERSION ? { p: local, src: 'browser cache' } : null, repo ? { p: repo, src: 'repository cache' } : null]
+    const cached = [local ? { p: local, src: 'browser cache' } : null, repo ? { p: repo, src: 'repository cache' } : null]
       .filter(Boolean).sort((x, y) => (y.p.through > x.p.through ? 1 : -1));
     const best = cached[0];
 
-    if (best && ageDays(best.p) <= CACHE_MAX_AGE_DAYS) return useCache(best.p, best.src);
+    if (best && !Store.needsDaily(best.p)) return useCache(best.p, best.src);
     try {
-      const j = await archive({
-        start_date: DATA_START, end_date: archiveEnd(),
-        daily: 'temperature_2m_max,temperature_2m_min,temperature_2m_mean,snowfall_sum',
-        temperature_unit: 'fahrenheit', precipitation_unit: 'inch',
-      });
+      // keep any hourly results we already had for this place
+      const payload = await Store.fetchDaily(state.place, best ? best.p : null); // only new days if we have older data
       if (token !== state.loadToken) return;
-      const d = j.daily;
-      let last = d.time.length - 1;
-      while (last > 0 && d.temperature_2m_min[last] == null) last--;
-      const n = last + 1;
-      const cut = (a, f) => a.slice(0, n).map(f);
-      const payload = {
-        v: Core.CACHE_VERSION, key, name: state.place.name, lat: Core.roundCoord(state.place.lat), lon: Core.roundCoord(state.place.lon),
-        fetched: new Date().toISOString(), through: d.time[last], elevation: j.elevation ?? null,
-        daily: { start: d.time[0], min: cut(d.temperature_2m_min, Core.r1), max: cut(d.temperature_2m_max, Core.r1), mean: cut(d.temperature_2m_mean, Core.r1), snow: cut(d.snowfall_sum, Core.r2) },
-        // keep any hourly results we already had for this place
-        bins: (best && best.p.bins) || {},
-      };
       useCache(payload, 'live data');
-      idb.set(key, payload);
+      Store.save(payload);
     } catch (err) {
       if (token !== state.loadToken) return;
       if (best) { useCache(best.p, `${best.src}, older (live refresh failed)`); return; }
@@ -463,31 +403,21 @@
   async function loadHours() {
     const token = state.loadToken;
     const W = shown();
-    const payload = state.payload;
+    let payload = state.payload;
     payload.bins = payload.bins || {};
-    const missing = W.filter((y) => !payload.bins[y]);
     $('#hoursBtn').disabled = true;
     try {
-      if (missing.length) {
-        const want = new Set(missing);
-        const lastYear = +state.lastDate.slice(0, 4);
-        const from = Math.min(...missing), to = Math.min(Math.max(...missing) + 1, lastYear);
-        const chunks = [];
-        for (let a = from; a <= to; a += 5) chunks.push([a, Math.min(a + 4, to)]);
-        let done = 0;
-        const fresh = {};
-        for (const [a, b] of chunks) {
-          $('#hoursProgress').textContent = `Loading hourly data… ${done}/${chunks.length} (only winters not already cached)`;
-          const j = await archive({
-            start_date: `${a}-01-01`, end_date: b === lastYear ? state.lastDate : `${b}-12-31`,
-            hourly: 'temperature_2m,relative_humidity_2m',
-          });
-          if (token !== state.loadToken) return;
-          Core.addHourly(fresh, j.hourly, want);
-          done++;
-        }
-        for (const y of missing) payload.bins[y] = fresh[y] || Core.emptyBins();
-        saveBrowserCache();
+      // The background downloader may already have fetched some winters: pick those up first
+      const stored = await Store.get(payload.key);
+      if (stored && stored.bins) payload.bins = { ...stored.bins, ...payload.bins };
+      const total = Store.missingWinters(payload, W).length;
+      let chunk;
+      while ((chunk = Store.nextChunk(Store.missingWinters(payload, W)))) {
+        const left = Store.missingWinters(payload, W).length;
+        $('#hoursProgress').textContent = `Loading hourly data… ${total - left} of ${total} winters (only winters not already cached)`;
+        await Store.fetchWinters(payload, chunk[0], chunk[1]);
+        if (token !== state.loadToken) return;
+        await saveBrowserCache(); // keep progress if the page is closed part way
       }
       state.bins = payload.bins;
       state.binsWinters = W;

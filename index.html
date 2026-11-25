@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b1320">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄</text></svg>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=1.10.0">
+  <link rel="stylesheet" href="css/styles.css?v=1.11.0">
 </head>
 <body>
   <header class="topbar">
@@ -136,18 +136,22 @@
     <footer>
       <p id="updated"></p>
       <p>Forecast data: <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener">National Weather Service API</a> gridpoint forecast. Hours past the NWS range (about day 7 onward) and the 10- and 16-day views use <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> global model data. Wet bulb is computed from forecast temperature and humidity at the grid's elevation. Plume reach is a rough estimate (throw distance + wind speed × hang time) — thresholds and gun parameters are editable in <code>js/config.js</code>.</p>
+      <p id="bgStatus" class="bg-status"></p>
     </footer>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="js/config.js?v=1.10.0"></script>
-  <script src="js/a11y.js?v=1.10.0"></script>
-  <script src="js/resort-picker.js?v=1.10.0"></script>
-  <script src="js/weather.js?v=1.10.0"></script>
-  <script src="js/sun.js?v=1.10.0"></script>
-  <script src="js/charts.js?v=1.10.0"></script>
-  <script src="js/map.js?v=1.10.0"></script>
-  <script src="js/app.js?v=1.10.0"></script>
+  <script src="js/config.js?v=1.11.0"></script>
+  <script src="js/a11y.js?v=1.11.0"></script>
+  <script src="js/resort-picker.js?v=1.11.0"></script>
+  <script src="js/weather.js?v=1.11.0"></script>
+  <script src="js/sun.js?v=1.11.0"></script>
+  <script src="js/charts.js?v=1.11.0"></script>
+  <script src="js/map.js?v=1.11.0"></script>
+  <script src="js/climate-core.js?v=1.11.0"></script>
+  <script src="js/climate-store.js?v=1.11.0"></script>
+  <script src="js/app.js?v=1.11.0"></script>
+  <script src="js/bg-cache.js?v=1.11.0"></script>
 </body>
 </html>
