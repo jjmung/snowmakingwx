@@ -5,9 +5,12 @@ window.SNOWWX_CONFIG = {
   // GitHub repo that holds the climate cache (data/cache) and the refresh workflow.
   repo: 'jjmung/snowmakingwx',
 
-  // Built-in resorts. Additional resorts can be saved from the map ("Save map center as resort").
+  // Built-in resorts, in dropdown order. Additional resorts can be saved from the map
+  // ("Save map center as location"). `logo` is the resort's icon shown in the location dropdown.
   resorts: [
-    { id: 'granite-peak', name: 'Granite Peak', region: 'Wausau, WI', lat: 44.9260, lon: -89.6845, zoom: 16 },
+    { id: 'granite-peak', name: 'Granite Peak', region: 'Rib Mountain, WI', lat: 44.9260, lon: -89.6845, zoom: 16, logo: 'assets/logos/granite-peak.svg' },
+    { id: 'lutsen', name: 'Lutsen Mountains', region: 'Lutsen, MN', lat: 47.6560, lon: -90.7251, zoom: 15, logo: 'assets/logos/lutsen.svg' },
+    { id: 'snow-river', name: 'Snow River', region: 'Wakefield, MI', lat: 46.5022, lon: -89.9738, zoom: 15, logo: 'assets/logos/snow-river.svg' },
   ],
 
   // Wet bulb rating zones in °F. Each zone applies up to and including `max`.

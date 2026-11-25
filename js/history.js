@@ -766,6 +766,7 @@
 
   // ---------- start ----------
   loadResorts();
+  window.SnowResortPicker.enhance($('#resortSelect'), Object.fromEntries(CFG.resorts.filter((r) => r.logo).map((r) => [r.id, r.logo])));
   syncControls();
   const qs = new URLSearchParams(location.search);
   const qLat = parseFloat(qs.get('lat')), qLon = parseFloat(qs.get('lon'));

@@ -58,7 +58,7 @@ Current version: **1.8** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) f
 - **Wind chart.** Sustained wind and gusts with caution and limit lines. Arrows point the way snow will drift.
 - **Plume drift map.** Collapsible; starts closed. Satellite, topo or street map. Place fan or tower guns, then scrub or play through the hours to see the estimated plume direction and reach for each gun.
 - **Location search.** Type a resort, town, address or `lat, lon` in the header (U.S. only). The address bar updates so the link can be shared, and **☆ Save** adds the place to your list.
-- **Saved locations.** Granite Peak (Wausau, WI) is the default. "Save map center as location" adds a place, or open a link like `?lat=44.926&lon=-89.684&name=My%20Hill`.
+- **Saved locations.** The location dropdown lists the built-in resorts with their logos: Granite Peak (Rib Mountain, WI, the default), Lutsen Mountains (Lutsen, MN) and Snow River (Wakefield, MI). Saved and searched places follow with a pin icon. "Save map center as location" adds a place, or open a link like `?lat=44.926&lon=-89.684&name=My%20Hill`.
 
 Keyboard: the left and right arrow keys step through the hours. On the wide 10- and 16-day charts they move the hour instead of scrolling the chart, and the charts scroll to keep the selected hour in view.
 
@@ -108,7 +108,7 @@ Keyboard: the left and right arrow keys step through the hours. On the wide 10- 
 | Forecast range | Forecast | 16 days |
 | Snowmaking windows view | Forecast | Calendar |
 | Plume drift map open or closed | Forecast | Closed |
-| Saved locations and placed guns | Forecast | Granite Peak, no guns |
+| Saved locations and placed guns | Forecast | Granite Peak, Lutsen Mountains, Snow River; no guns |
 | Snowmaking threshold | History | 28 °F |
 | Temperature measure | History | Daily low |
 | Winters shown | History | 50 |
@@ -118,7 +118,7 @@ Keyboard: the left and right arrow keys step through the hours. On the wide 10- 
 
 **In `js/config.js`** (applies to everyone):
 
-- built-in resorts and the default resort
+- built-in resorts (in dropdown order, each with a `logo`), and the default resort
 - wet bulb rating zones and their colors
 - the zone colors used in color blind mode
 - wind caution and limit speeds
@@ -178,6 +178,8 @@ To roll back a release, revert its pull request on GitHub.
     css/history.css         History page styles
     js/config.js            Resorts, rating zones, wind limits, gun types
     js/a11y.js              Color blind mode toggle
+    js/resort-picker.js     Location dropdown with resort logos
+    assets/logos/           Resort icons for the location dropdown
     js/weather.js           NWS forecast loader and wet bulb math
     js/charts.js            Forecast charts (Chart.js)
     js/sun.js               Sun position, sunrise and sunset
@@ -192,7 +194,9 @@ To roll back a release, revert its pull request on GitHub.
 
 Libraries are loaded from a CDN: Chart.js 4.4.1 and Leaflet 1.9.4.
 
-The page links its own scripts and styles with a version tag (`js/app.js?v=1.9.3`). When releasing, change the tag in `index.html` and `history.html` so browsers load the new files instead of cached ones (GitHub Pages lets browsers cache them for 10 minutes).
+The resort icons in `assets/logos/` are each resort's own website icon (from lutsen.com, snowriver.com and granitepeak.com), used only to identify the resort in the dropdown.
+
+The page links its own scripts and styles with a version tag (`js/app.js?v=1.10.0`). When releasing, change the tag in `index.html` and `history.html` so browsers load the new files instead of cached ones (GitHub Pages lets browsers cache them for 10 minutes).
 
 ---
 

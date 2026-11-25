@@ -4,6 +4,25 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.10 — November 25, 2026
+
+**Both pages: more built-in resorts, location dropdown with logos**
+
+Added
+- **Lutsen Mountains** (Lutsen, MN) and **Snow River** (Wakefield, MI) as built-in locations. The list order is Granite Peak, Lutsen Mountains, Snow River.
+- **Resort logos in the location dropdown** on the Forecast and History pages. Each resort shows its icon in the list and on the closed dropdown; saved and searched places show a pin.
+- The dropdown works with the keyboard: ↑ / ↓ to move, Enter to pick, Escape to close. While it is open, ← / → no longer step the forecast hours.
+
+Changed
+- Granite Peak's location label is now **Rib Mountain, WI** (was Wausau, WI).
+
+Notes
+- Snow River uses its Wakefield hill (Jackson Creek Summit, formerly Indianhead). Its other hill, Black River Basin near Bessemer, can be added with search and ☆ Save.
+- The new resorts work on the History page the same way as Granite Peak, loading climate history from Open-Meteo.
+- The resort icons come from each resort's own website and are used only to identify the resort.
+
+---
+
 ## 1.9.3 — November 25, 2026
 
 **Forecast page: 16-day default, outlook strip follows the selected hour** ([PR #13](https://github.com/jjmung/snowmakingwx/pull/13))

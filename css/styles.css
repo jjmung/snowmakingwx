@@ -115,6 +115,26 @@ select {
 .brand h1 { margin: 0; font-size: 18px; letter-spacing: .02em; }
 .brand .sub { color: var(--muted); font-size: 12px; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+/* Location dropdown with resort logos (js/resort-picker.js) */
+.rp { position: relative; min-width: 0; }
+.rp-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%; max-width: 300px; min-width: 0;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 5px 8px; cursor: pointer; color: var(--text);
+}
+.rp-btn:hover, .rp-btn[aria-expanded="true"] { border-color: var(--accent); }
+.rp-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.rp-caret { color: var(--muted); font-size: 11px; }
+.rp-logo { width: 22px; height: 22px; flex: none; border-radius: 5px; }
+.rp-pin { width: 22px; height: 16px; flex: none; fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.rp-list {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 2000; min-width: 100%; max-height: 60vh; overflow-y: auto;
+  display: grid; padding: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .45);
+}
+.rp-list[hidden] { display: none; }
+.rp-opt { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text); cursor: pointer; text-align: left; white-space: nowrap; }
+.rp-opt:hover, .rp-opt:focus-visible { background: rgba(255, 255, 255, .07); outline: none; }
+.rp-opt[aria-selected="true"] { color: var(--accent); font-weight: 600; }
 
 main { max-width: 1400px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 
@@ -377,7 +397,8 @@ footer code { color: var(--text); }
   main { padding: 12px; gap: 12px; }
   .topbar { padding: 8px 12px; }
   .controls, .search { width: 100%; max-width: none; flex-basis: 100%; }
-  .controls select { flex: 1; min-width: 0; }
+  .controls select, .controls .rp { flex: 1; min-width: 0; }
+  .rp-btn { max-width: none; }
   .card-value { font-size: 20px; }
   #map { height: 380px; }
   .chart-box { height: 260px; }

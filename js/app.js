@@ -776,6 +776,7 @@
 
   renderLegend();
   loadResorts();
+  window.SnowResortPicker.enhance($('#resortSelect'), Object.fromEntries(CFG.resorts.filter((r) => r.logo).map((r) => [r.id, r.logo])));
 
   // Ad-hoc location from the URL, e.g. ?lat=44.926&lon=-89.684&name=Granite%20Peak
   const qs = new URLSearchParams(location.search);
