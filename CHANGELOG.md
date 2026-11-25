@@ -12,6 +12,7 @@ Added
 - **Lutsen Mountains** (Lutsen, MN) and **Snow River** (Wakefield, MI) as built-in locations. The list order is Granite Peak, Lutsen Mountains, Snow River.
 - **Resort logos in the location dropdown** on the Forecast and History pages. Each resort shows its icon in the list and on the closed dropdown; saved and searched places show a pin.
 - The dropdown works with the keyboard: ↑ / ↓ to move, Enter to pick, Escape to close. While it is open, ← / → no longer step the forecast hours.
+- **Built-in resorts can be removed** with the ✕ button, like your own saved places. To add one back, search for it (or move the map to it) and press ☆ Save (or Save map center): anything within about 2 km of the resort brings it back with its name, logo and placed guns. The last location in the list cannot be removed.
 
 Changed
 - Granite Peak's location label is now **Rib Mountain, WI** (was Wausau, WI).

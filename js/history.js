@@ -94,7 +94,8 @@
 
   // ---------- location ----------
   function loadResorts() {
-    state.resorts = [...CFG.resorts, ...store.get('snowwx.customResorts', [])];
+    const hidden = store.get('snowwx.hiddenResorts', []); // built-ins removed on the Forecast page
+    state.resorts = [...CFG.resorts.filter((r) => !hidden.includes(r.id)), ...store.get('snowwx.customResorts', [])];
     const sel = $('#resortSelect');
     sel.innerHTML = '';
     sel.add(new Option('Saved locations…', ''));

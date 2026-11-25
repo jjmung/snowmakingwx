@@ -58,7 +58,7 @@ Current version: **1.8** (November 15, 2026). See [CHANGELOG.md](CHANGELOG.md) f
 - **Wind chart.** Sustained wind and gusts with caution and limit lines. Arrows point the way snow will drift.
 - **Plume drift map.** Collapsible; starts closed. Satellite, topo or street map. Place fan or tower guns, then scrub or play through the hours to see the estimated plume direction and reach for each gun.
 - **Location search.** Type a resort, town, address or `lat, lon` in the header (U.S. only). The address bar updates so the link can be shared, and **☆ Save** adds the place to your list.
-- **Saved locations.** The location dropdown lists the built-in resorts with their logos: Granite Peak (Rib Mountain, WI, the default), Lutsen Mountains (Lutsen, MN) and Snow River (Wakefield, MI). Saved and searched places follow with a pin icon. "Save map center as location" adds a place, or open a link like `?lat=44.926&lon=-89.684&name=My%20Hill`.
+- **Saved locations.** The location dropdown lists the built-in resorts with their logos: Granite Peak (Rib Mountain, WI, the default), Lutsen Mountains (Lutsen, MN) and Snow River (Wakefield, MI). Saved and searched places follow with a pin icon. Any location, built-in resorts included, can be removed with ✕; saving a place within about 2 km of a removed resort brings it back with its logo and guns. "Save map center as location" adds a place, or open a link like `?lat=44.926&lon=-89.684&name=My%20Hill`.
 
 Keyboard: the left and right arrow keys step through the hours. On the wide 10- and 16-day charts they move the hour instead of scrolling the chart, and the charts scroll to keep the selected hour in view.
 
