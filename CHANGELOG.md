@@ -6,7 +6,7 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ## 1.12 — November 25, 2026
 
-**App icon and link previews**
+**App icon and link previews** ([PR #16](https://github.com/jjmung/snowmakingwx/pull/16))
 
 Added
 - **App icon**: a snowflake over a snow-covered mountain on a winter-blue tile, in the browser tab, the page header, and on iPhone, iPad and Android home screens (`assets/icons/`, `site.webmanifest`).
