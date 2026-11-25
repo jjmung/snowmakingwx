@@ -4,6 +4,20 @@ Newest first. Each version is live at https://jjmung.github.io/snowmakingwx/ onc
 
 ---
 
+## 1.9.2 — November 25, 2026
+
+**Snowmaking windows: selected hour shown, no jump to the map** ([PR #12](https://github.com/jjmung/snowmakingwx/pull/12))
+
+Changed
+- Clicking a window card (calendar or list) now selects its first hour and stays put. It no longer scrolls to the bottom of the page or opens the plume drift map.
+
+Added
+- **Selected hour in the calendar**: a gray line on that day's 24-hour bar, and a gray outline on the day.
+- **Selected hour on window cards**: the card holding the hour gets a gray outline and a small gray tick on its bottom edge, placed by where the hour falls inside the window.
+- Both markers move with the arrow keys, and with any other way of picking an hour.
+
+---
+
 ## 1.9.1 — November 25, 2026
 
 **Fix: new features missing after an update** ([PR #11](https://github.com/jjmung/snowmakingwx/pull/11))
@@ -20,13 +34,13 @@ Fixed
 Changed
 - **Wet bulb limit** slider moved to the top of the page, above the summary cards. Its **default is now 26 °F** (was 28 °F), so Marginal covers 25–26 °F. If you have moved the slider before, your setting is kept.
 - **Snowmaking windows** moved up, between the summary cards and the hourly outlook. The hourly table moved with it.
-- **Plume drift map** is now collapsible and starts closed. Once you open or close it, the page remembers that. Clicking a window still opens the map at that hour.
+- **Plume drift map** is now collapsible and starts closed. Once you open or close it, the page remembers that.
 - **Wet bulb, temperature & humidity chart**: the floating hover box is gone. The hovered or selected hour's time, wet bulb and rating, temperature, dew point and humidity show in a bar above the chart, in larger text, so the lines stay visible.
 - **Arrow keys** on the 10d and 16d views now step through the hours instead of scrolling the wide charts sideways, and the charts scroll to keep the selected hour on screen. Arrow keys also update the chart's data bar while the mouse rests on the chart.
 
 Added
 - **Range picker** (48h to 16d) on the Snowmaking windows section, linked to the one on the hourly outlook.
-- **Windows calendar**: one cell per forecast day, laid out by week. Each day shows its usable hours, a 24-hour bar colored by wet bulb rating, and a card per window with times, hours, coldest wet bulb and rating, and average wind. Windows crossing midnight are split across both days, marked → and ←. Click a card to open the map at that hour, or a bar segment to select that hour. On phones the days stack in a simple grid.
+- **Windows calendar**: one cell per forecast day, laid out by week. Each day shows its usable hours, a 24-hour bar colored by wet bulb rating, and a card per window with times, hours, coldest wet bulb and rating, and average wind. Windows crossing midnight are split across both days, marked → and ←. Click a card to open the map at that hour, or a bar segment to select that hour (changed in 1.9.2: cards no longer open the map). On phones the days stack in a simple grid.
 - **View dropdown** next to the Snowmaking windows heading, with icons: Calendar (the default), Calendar + cards, or Cards. The choice is remembered.
 - **Day and night on the wet bulb chart**: a sky strip above the chart, colored by the sun's height hour by hour, with a sun or crescent moon that glides to the selected hour. The sun's height follows its real altitude. Night hours are shaded across the chart, and the data bar says Day or Night with the next sunset or sunrise.
 
